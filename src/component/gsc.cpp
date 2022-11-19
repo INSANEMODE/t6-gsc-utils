@@ -547,6 +547,29 @@ namespace gsc
                 world[key] = args[1];
                 return {};
             });
+
+            function::add("fs_tablelookup", [](const function_args& args) -> scripting::script_value
+                {
+                    std::string path = game::Dvar_FindVar("fs_homepath")->current.string;
+                    std::string file = args[0].as<std::string>();
+                    std::string finalpath = path.append(file);
+
+                    std::string rowheader = args[1].as<std::string>();
+                    if (path.empty() || file.empty() || finalpath.empty() || rowheader.empty())
+                    {
+                        return {};
+                    }
+                    int columnindex = args[2].as<int>();
+                    rapidcsv::Document doc(finalpath, rapidcsv::LabelParams(-1, 0));
+                    std::vector<std::string> row = doc.GetRow<std::string>(rowheader);
+
+                    const auto output = row.at(columnindex - 1);
+
+
+
+                    return output;
+                });
+
         }
     };
 }

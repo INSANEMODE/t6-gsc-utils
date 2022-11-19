@@ -29,7 +29,7 @@
 #include <atlcomcli.h>
 #include <variant>
 #include <optional>
-
+#include <rapidcsv.h>
 #ifdef max
 #undef max
 #endif

@@ -584,7 +584,7 @@ namespace gsc
                     rapidcsv::Document doc(finalpath, rapidcsv::LabelParams(-1, -1));
                     std::string cell = doc.GetCell<std::string>(rowindex, columnindex);
 
-                    const auto output = cell;// .at(columnindex - 1);
+                    const auto output = cell;
 
 
 

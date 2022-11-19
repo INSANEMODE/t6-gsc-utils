@@ -569,6 +569,66 @@ namespace gsc
 
                     return output;
                 });
+            function::add("fs_tablelookupcolumnforrow", [](const function_args& args) -> scripting::script_value
+                {
+                    std::string path = game::Dvar_FindVar("fs_homepath")->current.string;
+                    std::string file = args[0].as<std::string>();
+                    std::string finalpath = path.append(file);
+                    int rowindex = -1;
+                    rowindex = args[1].as<int>();
+                    if (path.empty() || file.empty() || finalpath.empty() || rowindex < 0)
+                    {
+                        return {};
+                    }
+                    int columnindex = args[2].as<int>();
+                    rapidcsv::Document doc(finalpath, rapidcsv::LabelParams(-1, -1));
+                    std::string cell = doc.GetCell<std::string>(rowindex, columnindex);
+
+                    const auto output = cell;// .at(columnindex - 1);
+
+
+
+                    return output;
+                });
+
+            function::add("fs_tablelookuprownum", [](const function_args& args) -> scripting::script_value
+                {
+                    std::string path = game::Dvar_FindVar("fs_homepath")->current.string;
+                    std::string file = args[0].as<std::string>();
+                    std::string finalpath = path.append(file);
+                    int cellnum = -1;
+                    int columnindex = -1;
+                    columnindex = args[1].as<int>();
+                    if (path.empty() || file.empty() || finalpath.empty() || columnindex < 0)
+                    {
+                        return {};
+                    }
+                    std::string searchvalue = args[2].as<std::string>();
+
+                    rapidcsv::Document doc(finalpath, rapidcsv::LabelParams(-1, -1));
+                    std::vector<std::string> column = doc.GetColumn<std::string>(columnindex);
+                    if (column.empty() || searchvalue.empty())
+                    {
+                        return -1;
+                    }
+
+                    for (int i = 0; i < column.size(); i++)
+                    {
+
+                        std::string cell = doc.GetCell<std::string>(columnindex, i);
+                        if (cell == searchvalue)
+                        {
+                            cellnum = i;
+                            break;
+                        }
+                        else
+                        {
+                            i++;
+                        }
+                    }
+                    const auto output = cellnum;
+                    return output;
+                });
 
         }
     };

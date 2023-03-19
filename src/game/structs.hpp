@@ -615,7 +615,7 @@ namespace game
 	struct $BFBB53559BEAC4289F32B924847E59CB
 	{
 		int stringCount;
-		const char* const* strings;
+		const char** strings;
 	};
 	static_assert(sizeof($BFBB53559BEAC4289F32B924847E59CB) == 0x8);
 
@@ -4023,7 +4023,8 @@ namespace game
 		vec3_t vHitNormal;
 		char bStuck;
 		char bDeflected;
-		char pad[0x8];//gjkcc_input_t* m_gjkcc_input;
+		//char pad[0x8];//gjkcc_input_t* m_gjkcc_input;
+		void* m_gjkcc_input;
 		char _pad[0x9F8];//char _pad[0xA00];//colgeom_visitor_inlined_t<300> proximity_data;
 		bool pathGoingDown;
 		AI_STAIRS_STATE stairsState;
@@ -4198,9 +4199,11 @@ namespace game
 
 	union $15188755ECCB7FF50C7B622D9D67D228
 	{
-		char pad[0x4];
+		//char pad[0x4];
 		//FxElemDef* elemDefs;
 		//FxElemDef* localElemDefs;
+		void* elemDefs;
+		void* localElemDefs;
 	};
 	static_assert(sizeof($15188755ECCB7FF50C7B622D9D67D228) == 0x4);
 
@@ -4243,7 +4246,8 @@ namespace game
 		const char* breakSound;
 		const char* breakNotify;
 		const char* loopSound;
-		char _pad[0xC];//XModel* spawnModel[3];
+		//char _pad[0xC];//XModel* spawnModel[3];
+		void* spawnModel[3];
 		PhysPreset* physPreset;
 	};
 	static_assert(sizeof(DestructibleStage) == 0x30);
@@ -4258,8 +4262,8 @@ namespace game
 		float meleeDamageScale;
 		float impactDamageScale;
 		float entityDamageTransfer;
-		char pad[0x4];
-		//PhysConstraints* physConstraints;
+		//char pad[0x4];		//PhysConstraints* physConstraints;
+		void* physConstraints;
 		int health;
 		const char* damageSound;
 		FxEffectDef* burnEffect;
@@ -4271,8 +4275,10 @@ namespace game
 	struct DestructibleDef
 	{
 		const char* name;
-		char _pad[0x4];		//XModel* model;
-		char pad[0x4];		//XModel* pristineModel;
+		//char _pad[0x4];		//XModel* model;
+		//char pad[0x4];		//XModel* pristineModel;
+		void* model;
+		void* pristineModel;
 		int numPieces;
 		DestructiblePiece* pieces;
 		int clientOnly;
@@ -4342,7 +4348,7 @@ namespace game
 		sentient_t* sentient;
 		TurretInfo* pTurretInfo;
 		Destructible* destructible;
-		char pad[0x4];//vehicle_t* vehicle;
+		void* vehicle; //char pad[0x2260];//vehicle_t* vehicle;
 		unsigned short model;
 		char physicsObject;
 		char takedamage;
@@ -4378,7 +4384,7 @@ namespace game
 		gentity_s* tagChildren;
 		unsigned short attachModelNames[19];
 		unsigned short attachTagNames[19];
-		char __pad[0x4];//XAnimTree_s* pAnimTree;
+		void* pAnimTree;//char __pad[0x4];//XAnimTree_s* pAnimTree;
 		unsigned short disconnectedLinks;
 		int iDisconnectTime;
 		int useCount;

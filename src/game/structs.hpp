@@ -32,6 +32,7 @@ namespace game
 		int client;
 	};
 
+	static_assert(sizeof(scr_entref_t) == 0x8);
 	struct BuiltinMethodDef
 	{
 		const char* actionString;
@@ -41,6 +42,7 @@ namespace game
 		void(__cdecl* actionFunc)(scr_entref_t);
 		int type;
 	};
+	static_assert(sizeof(BuiltinMethodDef) == 0x18);
 
 	struct BuiltinFunctionDef
 	{
@@ -51,6 +53,7 @@ namespace game
 		void(__cdecl* actionFunc)();
 		int type;
 	};
+	static_assert(sizeof(BuiltinFunctionDef) == 0x18);
 
 	enum scriptType_e
 	{
@@ -73,16 +76,18 @@ namespace game
 		SCRIPT_FREE = 0x17,
 	};
 
-	struct VariableStackBuffer
+	struct __declspec(align(2)) VariableStackBuffer
 	{
 		const char* pos;
-		unsigned __int16 size;
-		unsigned __int16 bufLen;
-		unsigned __int16 localId;
+		char* creationPos;
+		int waitTime;
+		unsigned short size;
+		unsigned short bufLen;
+		unsigned short localId;
 		char time;
 		char buf[1];
 	};
-
+	static_assert(sizeof(VariableStackBuffer) == 0x14);
 	union VariableUnion
 	{
 		int intValue;
@@ -95,13 +100,26 @@ namespace game
 		VariableStackBuffer* stackValue;
 		unsigned int entityOffset;
 	};
-
+	static_assert(sizeof(VariableUnion) == 0x4);
 	struct VariableValue
 	{
 		int type;
 		VariableUnion u;
 	};
-
+	static_assert(sizeof(VariableValue) == 0x8);
+	struct gscProfileInfo_t
+	{
+		unsigned int inclusive_time;
+		unsigned int exclusive_time;
+		unsigned int hit_count;
+	};
+	static_assert(sizeof(gscProfileInfo_t) == 0xC);
+	struct SCR_PROFILER_DATA
+	{
+		gscProfileInfo_t* profileInfo[8];
+		int profileInfoCount;
+	};
+	static_assert(sizeof(SCR_PROFILER_DATA) == 0x24);
 	struct function_stack_t
 	{
 		char* pos;
@@ -109,29 +127,38 @@ namespace game
 		unsigned int localId;
 		unsigned int localVarCount;
 		VariableValue* startTop;
+		SCR_PROFILER_DATA profileData;
 	};
+	static_assert(sizeof(function_stack_t) == 0x38);
 
 	struct function_frame_t
 	{
 		function_stack_t fs;
+		char* creationPos;
 	};
+	static_assert(sizeof(function_frame_t) == 0x3C);
 
-	struct scrVmPub_t
+	struct __declspec(align(8)) scrVmPub_t
 	{
 		unsigned int* localVars;
 		VariableValue* maxstack;
 		int function_count;
 		function_frame_t* function_frame;
 		VariableValue* top;
+		bool debugCode;
 		bool abort_on_error;
 		bool terminal_error;
 		bool block_execution;
 		unsigned int inparamcount;
 		unsigned int outparamcount;
+		unsigned int breakpointOutparamcount;
+		bool showError;
 		function_frame_t function_frame_start[32];
 		VariableValue stack[2048];
 		void(__cdecl* notifyListeners[1])(unsigned int, unsigned int);
 	};
+
+	static_assert(sizeof(scrVmPub_t) == 0x47B0);
 
 	struct scrVarPub_t
 	{
@@ -150,15 +177,15 @@ namespace game
 		unsigned int freeEntList;
 		unsigned int tempVariable;
 		bool bInited;
-		unsigned __int16 savecount;
+		unsigned short savecount;
 		unsigned int checksum;
 		unsigned int entId;
 		unsigned int entFieldName;
 		void* programHunkUser;
 		char* programBuffer;
 		char* endScriptBuffer;
-		unsigned __int16* saveIdMap;
-		unsigned __int16* saveIdMapRev;
+		unsigned short* saveIdMap;
+		unsigned short* saveIdMapRev;
 		unsigned int numScriptThreads;
 		unsigned int numScriptValues;
 		unsigned int numScriptObjects;
@@ -168,32 +195,36 @@ namespace game
 		volatile int totalVectorRefCount;
 		int allocationCount;
 	};
-
+	static_assert(sizeof(scrVarPub_t) == 0x74);
 	struct ObjectVariableChildren
 	{
-		unsigned int firstChild;
-		unsigned int lastChild;
+		unsigned short firstChild;
+		unsigned short lastChild;
 	};
+	static_assert(sizeof(ObjectVariableChildren) == 0x4);
 
 	struct ObjectVariableValue_u_f
 	{
-		unsigned __int16 prev;
-		unsigned __int16 next;
+		unsigned short prev;
+		unsigned short next;
 	};
+	static_assert(sizeof(ObjectVariableValue_u_f) == 0x4);
 
 	union ObjectVariableValue_u_o_u
 	{
-		unsigned __int16 size;
-		unsigned __int16 entnum;
-		unsigned __int16 nextEntId;
-		unsigned __int16 self;
+		unsigned short size;
+		unsigned short entnum;
+		unsigned short nextEntId;
+		unsigned short self;
 	};
+	static_assert(sizeof(ObjectVariableValue_u_o_u) == 0x2);
 
 	struct	ObjectVariableValue_u_o
 	{
-		unsigned __int16 refCount;
+		unsigned short refCount;
 		ObjectVariableValue_u_o_u u;
 	};
+	static_assert(sizeof(ObjectVariableValue_u_o) == 0x4);
 
 	union ObjectVariableValue_w
 	{
@@ -203,75 +234,79 @@ namespace game
 		unsigned int waitTime;
 		unsigned int parentLocalId;
 	};
-
+	static_assert(sizeof(ObjectVariableValue_w) == 0x4);
 	struct ChildVariableValue_u_f
 	{
-		unsigned __int16 prev;
-		unsigned __int16 next;
+		unsigned short prev;
+		unsigned short next;
 	};
-
+	static_assert(sizeof(ChildVariableValue_u_f) == 0x4);
 	union ChildVariableValue_u
 	{
 		ChildVariableValue_u_f f;
 		VariableUnion u;
 	};
+	static_assert(sizeof(ChildVariableValue_u) == 0x4);
 
 	struct ChildBucketMatchKeys_keys
 	{
-		unsigned __int16 name_hi;
-		unsigned __int16 parentId;
+		unsigned short name_hi;
+		unsigned short parentId;
 	};
+	static_assert(sizeof(ChildBucketMatchKeys_keys) == 0x4);
 
 	union ChildBucketMatchKeys
 	{
 		ChildBucketMatchKeys_keys keys;
 		unsigned int match;
 	};
+	static_assert(sizeof(ChildBucketMatchKeys) == 0x4);
 
 	struct	ChildVariableValue
 	{
 		ChildVariableValue_u u;
-		unsigned int next;
-		char pad[4];
+		unsigned short next;
 		char type;
 		char name_lo;
-		char _pad[2];
 		ChildBucketMatchKeys k;
-		unsigned int nextSibling;
-		unsigned int prevSibling;
+		unsigned short nextSibling;
+		unsigned short prevSibling;
 	};
+	static_assert(sizeof(ChildVariableValue) == 0x10);
+
 
 	union ObjectVariableValue_u
 	{
 		ObjectVariableValue_u_f f;
 		ObjectVariableValue_u_o o;
 	};
+	static_assert(sizeof(ChildVariableValue_u) == 0x4);
 
 	struct ObjectVariableValue
 	{
 		ObjectVariableValue_u u;
 		ObjectVariableValue_w w;
 	};
+	static_assert(sizeof(ObjectVariableValue) == 0x8);
+
 
 	struct scrVarGlob_t
 	{
 		ObjectVariableValue* objectVariableValue;
-		char __pad0[0x7C];
-		ObjectVariableChildren* objectVariableChildren;
-		char __pad1[0x7C];
-		unsigned __int16* childVariableBucket;
-		char __pad2[0x7C];
-		ChildVariableValue* childVariableValue;
+		__declspec(align(128)) ObjectVariableChildren* objectVariableChildren;
+		__declspec(align(128)) unsigned __int16* childVariableBucket;
+		__declspec(align(128)) ChildVariableValue* childVariableValue;
 	};
+	static_assert(sizeof(scrVarGlob_t) == 0x200);
 
 	struct scr_classStruct_t
 	{
-		unsigned __int16 id;
-		unsigned __int16 entArrayId;
+		unsigned short id;
+		unsigned short entArrayId;
 		char charId;
 		const char* name;
 	};
-
+	static_assert(sizeof(scr_classStruct_t) == 0xC);
 	enum gclientFlag
 	{
 		NOCLIP = 1 << 0,
@@ -284,62 +319,7 @@ namespace game
 		FL_DEMI_GODMODE = 1 << 1,
 		FL_NOTARGET = 1 << 2,
 		FL_SUPPORTS_LINKTO = 1 << 12,
-	}; // TODO: Finish
-	//struct __declspec(align(2)) entityState_s
-	//{
-	//	int number;
-	//	//LerpEntityState lerp;
-	//	//int time2;
-	//	//unsigned int loopSoundId;
-	//	//int solid;
-	//	//renderOptions_s renderOptions;
-	//	//$F846825EF6B602428693DD44F2E5E7AC un2;
-	//	//$8A55D3BB0C758A956A56F8E75035F352 un3;
-	//	//unsigned int partBits[5];
-	//	//clientLinkInfo_t clientLinkInfo;
-	//	//int clientMask[1];
-	//	//char events[4];
-	//	//unsigned int eventParms[4];
-	//	//unsigned int eventParm;
-	//	//__int16 eType;
-	//	//__int16 groundEntityNum;
-	//	//$32A75A724673AB33BA2D603F67D50EA7 index;
-	//	//__int16 otherEntityNum;
-	//	//__int16 attackerEntityNum;
-	//	//__int16 enemyModel;
-	//	//Weapon weapon;
-	//	//Weapon lastStandPrevWeapon;
-	//	//unsigned __int16 targetname;
-	//	//__int16 loopSoundFade;
-	//	//__int16 eventSequence;
-	//	//char surfType;
-	//	char __pad0[0xEF];
-	//	char clientNum;
-	//	char iHeadIcon;
-	//	char weaponModel;
-	//	char __pad1[0x01];
-	//	
-	//};
-
-	//struct gclient_s
-	//{
-	//	char __pad0[0x18];
-	//	int eflags;
-	//	char __pad1[0x5668];
-	//	int flags;
-	//};
-
-	//struct gentity_s
-	//{
-	//	entityState_s s;
-	//	char __pad0[0x5C];
-	//	gclient_s* client; // 340
-	//	char __pad1[0x30];
-	//	int flags; // 392
-	//	char __pad2[0x190];
-	//};
-
-	//static_assert(sizeof(gentity_s) == 0x31C);
+	};
 
 	enum state
 	{
@@ -378,18 +358,18 @@ namespace game
 			unsigned char ip[4];
 			unsigned int inaddr;
 		};
-		unsigned __int16 port;
+		unsigned short port;
 		netadrtype_t type;
 		netsrc_t localNetID;
-		unsigned __int16 serverID;
+		unsigned short serverID;
 	};
-
 	static_assert(sizeof(netadr_t) == 0x14);
 
 	struct netProfileInfo_t
 	{
 		unsigned char __pad0[0x5E0];
 	};
+	static_assert(sizeof(netProfileInfo_t) == 0x5E0);
 
 	struct netchan_t
 	{
@@ -447,32 +427,27 @@ namespace game
 
 	static_assert(sizeof(clientHeader_t) == 0x72C);
 
-	//struct client_s
-	//{
-	//	clientHeader_t header;
-	//	const char* dropReason;
-	//	char userinfo[1024];
-	//	unsigned char __pad0[0x3F75C];
-	//	int bIsTestClient;
-	//	unsigned char __pad1[0xDEF0];
-	//};
-
-	//static_assert(sizeof(client_s) == 0x4E180);
 	struct svscmd_info_t
 	{
 		char* cmd;
 		int time;
 		int type;
 	};
-	struct bitarray
+	static_assert(sizeof(svscmd_info_t) == 0xC);
+
+	struct bitarray //<64>
 	{
 		int array[2];
 	};
+	static_assert(sizeof(bitarray) == 0x8);
+
 	union $60971AFD306BE716C67F4ED6B7576D56
 	{
 		float rollmove;
-		__int16 damageKick[2];
+		short damageKick[2];
 	};
+	static_assert(sizeof($60971AFD306BE716C67F4ED6B7576D56) == 0x4);
+
 	struct $190F2CF944EC18EE3AF27F473C4F9DBE
 	{
 		unsigned __int32 weaponIdx : 8;
@@ -481,12 +456,14 @@ namespace game
 		unsigned __int32 attachment3 : 6;
 		unsigned __int32 padding : 6;
 	};
+	static_assert(sizeof($190F2CF944EC18EE3AF27F473C4F9DBE) == 0x4);
 
 	union Weapon
 	{
 		$190F2CF944EC18EE3AF27F473C4F9DBE __s0;
 		unsigned int weaponData;
 	};
+	static_assert(sizeof(Weapon) == 0x4);
 
 	struct usercmd_s
 	{
@@ -501,38 +478,22 @@ namespace game
 		char upmove;
 		char pitchmove;
 		char yawmove;
-		__int16 gunPitch;
-		__int16 gunYaw;
-		__int16 wiiumoteAimX;
-		__int16 wiiumoteAimY;
+		short gunPitch;
+		short gunYaw;
+		short wiiumoteAimX;
+		short wiiumoteAimY;
 		char wiiuControllerType;
-		unsigned __int16 meleeChargeEnt;
+		unsigned short meleeChargeEnt;
 		char meleeChargeDist;
 		$60971AFD306BE716C67F4ED6B7576D56 ___u18;
 		char selectedLocation[2];
 		char selectedYaw;
-		unsigned __int16 airburstMarkDistance;
-		unsigned __int16 lastInput;
+		unsigned short airburstMarkDistance;
+		unsigned short lastInput;
 	};
-	struct clientSnapshot_t
-	{
-		//playerState_s ps;
-		unsigned char __pad0[0x2A08];
-		int entityCount;
-		int clientCount;
-		int actorCount;
-		int matchStateIndex;
-		int firstEntityIndex;
-		int firstClientIndex;
-		int firstActorIndex;
-		int messageSent;
-		int messageAcked;
-		int messageSize;
-		int serverTime;
-		int physicsTime;
-		int timeDelta;
-		int baselineSnap;
-	};
+	static_assert(sizeof(usercmd_s) == 0x44);
+
+
 
 
 
@@ -543,8 +504,8 @@ namespace game
 		const char* autoCompleteDir;
 		const char* autoCompleteExt;
 		void(__cdecl* function)();
-		int flags;
 	};
+	static_assert(sizeof(cmd_function_t) == 0x14);
 
 	struct CmdArgs
 	{
@@ -561,6 +522,7 @@ namespace game
 		int totalUsedArgvPool;
 		int totalUsedTextPool;
 	};
+	static_assert(sizeof(CmdArgs) == 0x28EC);
 
 	enum dvarType_t
 	{
@@ -592,32 +554,46 @@ namespace game
 		const char* string;
 		char color[4];
 	};
+	static_assert(sizeof(DvarValue) == 0x10);
 
-	struct $A37BA207B3DDD6345C554D4661813EDD
+
+	struct $BFBB53559BEAC4289F32B924847E59CB
 	{
 		int stringCount;
 		const char* const* strings;
 	};
+	static_assert(sizeof($BFBB53559BEAC4289F32B924847E59CB) == 0x8);
 
 	struct $9CA192F9DB66A3CB7E01DE78A0DEA53D
 	{
 		int min;
 		int max;
 	};
+	static_assert(sizeof($9CA192F9DB66A3CB7E01DE78A0DEA53D) == 0x8);
+
+	struct $5FF817DA2B223410B016B4653DEC4160
+	{
+		__int64 min;
+		__int64 max;
+	};
+	static_assert(sizeof($5FF817DA2B223410B016B4653DEC4160) == 0x10);
 
 	struct $251C2428A496074035CACA7AAF3D55BD
 	{
 		float min;
 		float max;
 	};
+	static_assert(sizeof($251C2428A496074035CACA7AAF3D55BD) == 0x8);
 
 	union DvarLimits
 	{
-		$A37BA207B3DDD6345C554D4661813EDD enumeration;
+		$BFBB53559BEAC4289F32B924847E59CB enumeration;
 		$9CA192F9DB66A3CB7E01DE78A0DEA53D integer;
+		$5FF817DA2B223410B016B4653DEC4160 integer64;
 		$251C2428A496074035CACA7AAF3D55BD value;
 		$251C2428A496074035CACA7AAF3D55BD vector;
 	};
+	static_assert(sizeof(DvarLimits) == 0x10);
 
 	struct dvar_t
 	{
@@ -633,8 +609,9 @@ namespace game
 		DvarLimits domain;
 		dvar_t* hashNext;
 	};
+	static_assert(sizeof(dvar_t) == 0x60);
 
-	struct GSC_OBJ
+	struct __declspec(align(2)) GSC_OBJ
 	{
 		char magic[8];
 		unsigned int source_crc;
@@ -647,26 +624,27 @@ namespace game
 		unsigned int fixup_offset;
 		unsigned int profile_offset;
 		unsigned int cseg_size;
-		unsigned __int16 name;
-		unsigned __int16 stringtablefixup_count;
-		unsigned __int16 exports_count;
-		unsigned __int16 imports_count;
-		unsigned __int16 fixup_count;
-		unsigned __int16 profile_count;
+		unsigned short name;
+		unsigned short stringtablefixup_count;
+		unsigned short exports_count;
+		unsigned short imports_count;
+		unsigned short fixup_count;
+		unsigned short profile_count;
 		char include_count;
 		char animtree_count;
 		char flags;
 	};
+	static_assert(sizeof(GSC_OBJ) == 0x40);
 
 	struct GSC_EXPORT_ITEM
 	{
 		unsigned int checksum;
 		unsigned int address;
-		unsigned __int16 name;
+		unsigned short name;
 		char param_count;
 		char flags;
 	};
-
+	static_assert(sizeof(GSC_EXPORT_ITEM) == 0x0C);
 	// gsc-tool
 	enum class opcode : std::uint8_t
 	{
@@ -875,17 +853,46 @@ namespace game
 		int len;
 		GSC_OBJ* obj;
 	};
+	static_assert(sizeof(ScriptParseTree) == 0x0C);
+
+	struct GSC_OBJGDB
+	{
+		char magic[8];
+		unsigned int version;
+		unsigned int source_crc;
+		unsigned int lineinfo_count;
+	};
+	static_assert(sizeof(GSC_OBJGDB) == 0x14);
+
+	struct debugFileInfo_t
+	{
+		const char* filename;
+		void* startAddr;
+		void* endAddr;
+		char** lineStartAddr;
+		int lineStartAddrCount;
+		char* source;
+		int sourceLen;
+		GSC_OBJGDB* gdb;
+	};
+	static_assert(sizeof(debugFileInfo_t) == 0x20);
 
 	struct objFileInfo_t
 	{
 		GSC_OBJ* activeVersion;
-		char __pad[0x24];
+		GSC_OBJ* baselineVersion;
+		debugFileInfo_t debugInfo;
+		gscProfileInfo_t* profileInfo;
+		int profileInfoCount;
 	};
+	static_assert(sizeof(objFileInfo_t) == 0x30);
 
 	union XAssetHeader
 	{
 		ScriptParseTree* scriptParseTree;
 	};
+	static_assert(sizeof(XAssetHeader) == 0x4);
+
 	struct msg_t
 	{
 		int overflowed;
@@ -901,7 +908,7 @@ namespace game
 		int flush;
 		netsrc_t targetLocalNetID;
 	};
-
+	static_assert(sizeof(msg_t) == 0x30);
 
 	struct trajectory_t
 	{
@@ -911,37 +918,46 @@ namespace game
 		vec3_t trBase;
 		vec3_t trDelta;
 	};
+	static_assert(sizeof(trajectory_t) == 0x24);
+
 	struct LerpEntityStateVehicleRotorArm
 	{
-		__int16 pitch;
-		__int16 roll;
+		short pitch;
+		short roll;
 	};
+	static_assert(sizeof(LerpEntityStateVehicleRotorArm) == 0x4);
 	struct LerpEntityStateVehicleGunnerAngles
 	{
-		__int16 pitch;
-		__int16 yaw;
+		short pitch;
+		short yaw;
 	};
+	static_assert(sizeof(LerpEntityStateVehicleGunnerAngles) == 0x4);
 	struct LerpEntityStateZBarrierPiece
 	{
 		char flags;
 		char animTime;
 	};
+	static_assert(sizeof(LerpEntityStateZBarrierPiece) == 0x2);
 	struct LerpEntityStateEarthquake
 	{
 		float scale;
 		float radius;
 		int duration;
 	};
+	static_assert(sizeof(LerpEntityStateEarthquake) == 0xC);
 	union $6EDB3B6EA9A5F72E2667D669F0CA2B22
 	{
 		LerpEntityStateVehicleGunnerAngles gunnerAngles[4];
 		LerpEntityStateVehicleRotorArm rotors[4];
 	};
+	static_assert(sizeof($6EDB3B6EA9A5F72E2667D669F0CA2B22) == 0x10);
+
 	union $ABF14481B6CB3C635AAEF83DF0F35947
 	{
-		__int16 throttle;
-		__int16 bodyPitch;
+		short throttle;
+		short bodyPitch;
 	};
+	static_assert(sizeof($ABF14481B6CB3C635AAEF83DF0F35947) == 0x2);
 
 	struct __declspec(align(2)) LerpEntityStateVehicle
 	{
@@ -949,8 +965,8 @@ namespace game
 		float bodyRoll;
 		$6EDB3B6EA9A5F72E2667D669F0CA2B22 ___u2;
 		$ABF14481B6CB3C635AAEF83DF0F35947 ___u3;
-		__int16 gunPitch;
-		__int16 gunYaw;
+		short gunPitch;
+		short gunYaw;
 		char targetRotorSpeed;
 
 		struct LerpEntityStateJetThrust
@@ -983,18 +999,22 @@ namespace game
 		char weaponHeat;
 		char proneLegsAngle;
 	};
-
+	static_assert(sizeof(LerpEntityStateVehicle) == 0x20);
 
 	struct LerpEntityStateLoopFx
 	{
 		float cullDist;
 		int period;
 	};
+	static_assert(sizeof(LerpEntityStateLoopFx) == 0x8);
+
 	struct LerpEntityStateCustomExplode
 	{
 		int startTime;
 		int effectIndex;
 	};
+	static_assert(sizeof(LerpEntityStateCustomExplode) == 0x8);
+
 	struct LerpEntityStateTurret
 	{
 		vec3_t gunAngles;
@@ -1004,16 +1024,21 @@ namespace game
 		float pivotOffset;
 		int flags;
 	};
+	static_assert(sizeof(LerpEntityStateTurret) == 0x20);
+	//////////////checked above
 
 	union $41090544F01B971CEA6978417397BD1B
 	{
 		int actorNum;
 		int corpseNum;
 	};
+	static_assert(sizeof($41090544F01B971CEA6978417397BD1B) == 0x4);
+
 	struct $0E2ADDF4FFAE096DF2EC3B0B4A5C12BC
 	{
-		__int16 fBodyPitch;
+		short fBodyPitch;
 	};
+	static_assert(sizeof($0E2ADDF4FFAE096DF2EC3B0B4A5C12BC) == 0x2);
 
 	struct LerpEntityStateActor
 	{
@@ -1023,17 +1048,25 @@ namespace game
 		int enemy;
 		int freeCameraLockOnAllowed;
 		$0E2ADDF4FFAE096DF2EC3B0B4A5C12BC proneInfo;
-		unsigned __int16 aiType;
+		unsigned short aiType;
 	};
+	static_assert(sizeof(LerpEntityStateActor) == 0x18);
+
 	struct LerpEntityStateZBarrier
 	{
 		unsigned int barrierTypeIndex;
 		LerpEntityStateZBarrierPiece pieces[6];
 	};
+	static_assert(sizeof(LerpEntityStateZBarrier) == 0x10);
+
+
 	struct LerpEntityStateAnonymous
 	{
 		int data[9];
 	};
+	static_assert(sizeof(LerpEntityStateAnonymous) == 0x24);
+
+
 	struct LerpEntityStateExplosion
 	{
 		float innerRadius;
@@ -1042,10 +1075,13 @@ namespace game
 		int dummy;
 		float outerDamage;
 	};
+	static_assert(sizeof(LerpEntityStateExplosion) == 0x14);
 	struct LerpEntityStateBulletHit
 	{
 		vec3_t start;
 	};
+	static_assert(sizeof(LerpEntityStateBulletHit) == 0xC);
+
 	struct LerpEntityStatePrimaryLight
 	{
 		char colorAndExp[4];
@@ -1055,12 +1091,16 @@ namespace game
 		float cosHalfFovInner;
 		unsigned int mixerIndex;
 	};
+	static_assert(sizeof(LerpEntityStatePrimaryLight) == 0x18);
+
 	struct LerpEntityStateCreateDynEnt
 	{
 		int model;
 		int fxId;
 		int mature;
 	};
+	static_assert(sizeof(LerpEntityStateCreateDynEnt) == 0xC);
+
 	struct LerpEntityStateMissile
 	{
 		int launchTime;
@@ -1069,39 +1109,50 @@ namespace game
 		int forcedDud;
 		float autoDetonateTime;
 	};
+	static_assert(sizeof(LerpEntityStateMissile) == 0x14);
+
+
 	struct LerpEntityStateScriptMover
 	{
 		char attachTagIndex[4];
 		int attachedTagIndex;
-		__int16 attachModelIndex[4];
-		__int16 animScriptedAnim;
-		__int16 attachedEntNum;
+		short attachModelIndex[4];
+		short animScriptedAnim;
+		short attachedEntNum;
 		int attachedEntTime;
-		__int16 exploderIndex;
-		unsigned __int16 scale;
+		short exploderIndex;
+		unsigned short scale;
 		char flags;
-		unsigned __int16 aiType;
+		unsigned short aiType;
 	};
+	static_assert(sizeof(LerpEntityStateScriptMover) == 0x20);
+
 	struct LerpEntityStateDestructibleHit
 	{
 		unsigned int modelState[3];
 	};
+	static_assert(sizeof(LerpEntityStateDestructibleHit) == 0xC);
+
 	struct LerpEntityStateExplosionJolt
 	{
 		float innerRadius;
 		vec3_t impulse;
 	};
+	static_assert(sizeof(LerpEntityStateExplosionJolt) == 0x10);
+
 	struct LerpEntityStateJetThrust
 	{
 		vec3_t thrustDir;
 		int dummy;
 		float dotLimit;
 	};
+	static_assert(sizeof(LerpEntityStateJetThrust) == 0x14);
 
 	struct LerpEntityStateStreamerHint
 	{
 		float factor;
 	};
+	static_assert(sizeof(LerpEntityStateStreamerHint) == 0x4);
 
 	union LerpEntityStateTypeUnion
 	{
@@ -1126,11 +1177,15 @@ namespace game
 		LerpEntityStateZBarrier zbarrier;
 		LerpEntityStateAnonymous anonymous;
 	};
+	static_assert(sizeof(LerpEntityStateTypeUnion) == 0x24);
+
 	union $9B35D18BE7DE1A49784D3DA3953D5C89
 	{
 		char iHeadIconTeam;
-		__int16 teamAndOwnerIndex;
+		short teamAndOwnerIndex;
 	};
+	static_assert(sizeof($9B35D18BE7DE1A49784D3DA3953D5C89) == 0x2);
+
 
 	struct LerpEntityState
 	{
@@ -1139,23 +1194,29 @@ namespace game
 		trajectory_t pos;
 		trajectory_t apos;
 		LerpEntityStateTypeUnion u;
-		__int16 useCount;
+		short useCount;
 		$9B35D18BE7DE1A49784D3DA3953D5C89 faction;
 		unsigned int clientFields;
 	};
+	static_assert(sizeof(LerpEntityState) == 0x7C);
+
 
 	struct renderOptions_s
 	{
 		unsigned int s;
 	};
+	static_assert(sizeof(renderOptions_s) == 0x4);
+
 	struct actorAnimState_t
 	{
-		__int16 state;
+		short state;
 		char subState;
 		float fLeanAmount;
 		float fAimUpDown;
 		float fAimLeftRight;
 	};
+	static_assert(sizeof(actorAnimState_t) == 0x10);
+
 	struct playerAnimState_t
 	{
 		int legsAnim;
@@ -1163,32 +1224,42 @@ namespace game
 		float fTorsoPitch;
 		float fWaistPitch;
 	};
+	static_assert(sizeof(playerAnimState_t) == 0x10);
+
 	struct vehicleState_t
 	{
-		__int16 flags;
+		short flags;
 		char vehicleDefIndex;
 		char treeId;
-		__int16 animId;
-		__int16 attachModelIndex[2];
+		short animId;
+		short attachModelIndex[2];
 		char attachTagIndex[2];
 	};
+	static_assert(sizeof(vehicleState_t) == 0xC);
+
 	struct hardlineHint_t
 	{
 		char team;
 		char perk;
 		char hint;
 	};
+	static_assert(sizeof(hardlineHint_t) == 0x3);
+
 	struct scriptMoverState_t
 	{
 		char fov;
 		char treeId;
-		__int16 animId;
+		short animId;
 	};
+	static_assert(sizeof(scriptMoverState_t) == 0x4);
+
 	struct fxLightingState_t
 	{
 		float primaryLightFraction;
 		int lightingOriginOffset;
 	};
+	static_assert(sizeof(fxLightingState_t) == 0x8);
+
 
 	union $F846825EF6B602428693DD44F2E5E7AC
 	{
@@ -1199,6 +1270,8 @@ namespace game
 		scriptMoverState_t moverState;
 		fxLightingState_t fx;
 	};
+	static_assert(sizeof($F846825EF6B602428693DD44F2E5E7AC) == 0x10);
+
 	union $8A55D3BB0C758A956A56F8E75035F352
 	{
 		int hintString;
@@ -1206,19 +1279,25 @@ namespace game
 		unsigned int secondBcAlias;
 		unsigned int soundTag;
 	};
+	static_assert(sizeof($8A55D3BB0C758A956A56F8E75035F352) == 0x4);
+
 	struct clientLinkInfo_t
 	{
-		__int16 parentEnt;
+		short parentEnt;
 		char tagIndex;
 		char flags;
 	};
+	static_assert(sizeof(clientLinkInfo_t) == 0x4);
+
 	union $32A75A724673AB33BA2D603F67D50EA7
 	{
-		__int16 brushmodel;
-		__int16 xmodel;
-		__int16 primaryLight;
-		unsigned __int16 bone;
+		short brushmodel;
+		short xmodel;
+		short primaryLight;
+		unsigned short bone;
 	};
+	static_assert(sizeof($32A75A724673AB33BA2D603F67D50EA7) == 0x2);
+
 	union $5941A7488DBCD59DA5C855EBC8EBAB48
 	{
 		char scale;
@@ -1227,6 +1306,8 @@ namespace game
 		char destructibleid;
 		char zombieShrinkOn;
 	};
+	static_assert(sizeof($5941A7488DBCD59DA5C855EBC8EBAB48) == 0x1);
+
 
 	struct __declspec(align(2)) entityState_s
 	{
@@ -1244,23 +1325,25 @@ namespace game
 		char events[4];
 		unsigned int eventParms[4];
 		unsigned int eventParm;
-		__int16 eType;
-		__int16 groundEntityNum;
+		short eType;
+		short groundEntityNum;
 		$32A75A724673AB33BA2D603F67D50EA7 index;
-		__int16 otherEntityNum;
-		__int16 attackerEntityNum;
-		__int16 enemyModel;
+		short otherEntityNum;
+		short attackerEntityNum;
+		short enemyModel;
 		Weapon weapon;
 		Weapon lastStandPrevWeapon;
-		unsigned __int16 targetname;
-		__int16 loopSoundFade;
-		__int16 eventSequence;
+		unsigned short targetname;
+		short loopSoundFade;
+		short eventSequence;
 		char surfType;
 		char clientNum;
 		char iHeadIcon;
 		char weaponModel;
 		$5941A7488DBCD59DA5C855EBC8EBAB48 un1;
 	};
+	static_assert(sizeof(entityState_s) == 0xF8);
+
 	struct cachedSnapshot_t
 	{
 		int archivedFrame;
@@ -1275,18 +1358,24 @@ namespace game
 		int matchStateIndex;
 		int usesDelta;
 	};
+	static_assert(sizeof(cachedSnapshot_t) == 0x2C);
+
 	struct archivedEntityShared_t
 	{
 		int svFlags;
 		vec3_t absmin;
 		vec3_t absmax;
 	};
+	static_assert(sizeof(archivedEntityShared_t) == 0x1C);
+
 
 	struct archivedEntity_s
 	{
 		entityState_s s;
 		archivedEntityShared_t r;
 	};
+	static_assert(sizeof(archivedEntity_s) == 0x114);
+
 	struct __declspec(align(4)) PlayerVehicleState
 	{
 		vec3_t origin;
@@ -1301,6 +1390,8 @@ namespace game
 		int flags;
 		bool fullPhysics;
 	};
+	static_assert(sizeof(PlayerVehicleState) == 0x54);
+
 	enum ClientNum_t
 	{
 		INVALID_CLIENT_INDEX = 0xFFFFFFFF,
@@ -1365,14 +1456,20 @@ namespace game
 		bool blockWeaponPickup;
 		char model;
 	};
+	static_assert(sizeof(PlayerHeldWeapon) == 0x1C);
+
 	struct AmmoPool
 	{
 		int count;
 	};
+	static_assert(sizeof(AmmoPool) == 0x4);
+
 	struct AmmoClip
 	{
 		int count;
 	};
+	static_assert(sizeof(AmmoClip) == 0x4);
+
 	enum ViewLockTypes
 	{
 		PLAYERVIEWLOCK_NONE = 0x0,
@@ -1399,6 +1496,8 @@ namespace game
 		int sprintDuration;
 		int sprintCooldown;
 	};
+	static_assert(sizeof(SprintState) == 0x1C);
+
 	struct MantleState
 	{
 		float yaw;
@@ -1406,6 +1505,8 @@ namespace game
 		int transIndex;
 		int flags;
 	};
+	static_assert(sizeof(MantleState) == 0x10);
+
 	enum ActionSlotType
 	{
 		ACTIONSLOTTYPE_DONOTHING = 0x0,
@@ -1418,10 +1519,14 @@ namespace game
 	{
 		Weapon weapon;
 	};
+	static_assert(sizeof(ActionSlotParam_SpecifyWeapon) == 0x4);
+
 	struct ActionSlotParam
 	{
 		ActionSlotParam_SpecifyWeapon specifyWeapon;
 	};
+	static_assert(sizeof(ActionSlotParam) == 0x4);
+
 	enum objectiveState_t
 	{
 		OBJST_EMPTY = 0x0,
@@ -1434,18 +1539,20 @@ namespace game
 	{
 		objectiveState_t state;
 		vec3_t origin;
-		__int16 entNum;
+		short entNum;
 		vec2_t size;
 		int icon;
-		__int16 ownerNum;
-		unsigned __int16 name;
-		__int16 teamMask;
+		short ownerNum;
+		unsigned short name;
+		short teamMask;
 		char progress;
 		int clientUseMask[1];
 		char gamemodeFlags;
 		char flags;
 		char teamNum;
 	};
+	static_assert(sizeof(objective_t) == 0x30);
+
 
 	struct $C96EA5EC2ACBB9C0BF22693F316ACC67
 	{
@@ -1454,12 +1561,16 @@ namespace game
 		char b;
 		char a;
 	};
+	static_assert(sizeof($C96EA5EC2ACBB9C0BF22693F316ACC67) == 0x4);
+
 
 	union hudelem_color_t
 	{
 		$C96EA5EC2ACBB9C0BF22693F316ACC67 __s0;
 		int rgba;
 	};
+	static_assert(sizeof(hudelem_color_t) == 0x4);
+
 
 	struct __declspec(align(4)) hudelem_s
 	{
@@ -1483,22 +1594,22 @@ namespace game
 		hudelem_color_t glowColor;
 		int fxBirthTime;
 		unsigned int flags;
-		__int16 targetEntNum;
-		__int16 fontScaleTime;
-		__int16 fadeTime;
-		__int16 label;
-		__int16 width;
-		__int16 height;
-		__int16 fromWidth;
-		__int16 fromHeight;
-		__int16 scaleTime;
-		__int16 moveTime;
-		__int16 text;
-		unsigned __int16 fxLetterTime;
-		unsigned __int16 fxDecayStartTime;
-		unsigned __int16 fxDecayDuration;
-		unsigned __int16 fxRedactDecayStartTime;
-		unsigned __int16 fxRedactDecayDuration;
+		short targetEntNum;
+		short fontScaleTime;
+		short fadeTime;
+		short label;
+		short width;
+		short height;
+		short fromWidth;
+		short fromHeight;
+		short scaleTime;
+		short moveTime;
+		short text;
+		unsigned short fxLetterTime;
+		unsigned short fxDecayStartTime;
+		unsigned short fxDecayDuration;
+		unsigned short fxRedactDecayStartTime;
+		unsigned short fxRedactDecayDuration;
 		char type;
 		char font;
 		char alignOrg;
@@ -1510,12 +1621,16 @@ namespace game
 		char soundID;
 		char ui3dWindow;
 	};
+	static_assert(sizeof(hudelem_s) == 0x7C);
+
 
 	struct $94851E490C69050A57D20547D7862040
 	{
 		hudelem_s current[31];
 		hudelem_s archival[31];
 	};
+	static_assert(sizeof($94851E490C69050A57D20547D7862040) == 0x1E08);
+
 
 	struct __declspec(align(8)) playerState_s
 	{
@@ -1564,8 +1679,8 @@ namespace game
 		int moveType;
 		int legsTimer;
 		int torsoTimer;
-		__int16 legsAnim;
-		__int16 torsoAnim;
+		short legsAnim;
+		short torsoAnim;
 		int legsAnimDuration;
 		int torsoAnimDuration;
 		int damageTimer;
@@ -1577,12 +1692,12 @@ namespace game
 		int eFlags;
 		int eFlags2;
 		PlayerVehicleState vehicleState;
-		__int16 predictableEventSequence;
-		__int16 predictableEventSequenceOld;
+		short predictableEventSequence;
+		short predictableEventSequenceOld;
 		int predictableEvents[4];
 		unsigned int predictableEventParms[4];
-		__int16 unpredictableEventSequence;
-		__int16 unpredictableEventSequenceOld;
+		short unpredictableEventSequence;
+		short unpredictableEventSequenceOld;
 		int unpredictableEvents[4];
 		unsigned int unpredictableEventParms[4];
 		ClientNum_t clientNum;
@@ -1627,7 +1742,7 @@ namespace game
 		float proneDirectionPitch;
 		float proneTorsoPitch;
 		ViewLockTypes viewlocked;
-		__int16 viewlocked_entNum;
+		short viewlocked_entNum;
 		int vehiclePos;
 		int vehicleType;
 		int vehicleAnimBoneIndex;
@@ -1673,8 +1788,8 @@ namespace game
 		ActionSlotType actionSlotType[4];
 		ActionSlotParam actionSlotParam[4];
 		Weapon inventoryWeapon;
-		__int16 wiiumoteAimX;
-		__int16 wiiumoteAimY;
+		short wiiumoteAimX;
+		short wiiumoteAimY;
 		char wiiuControllerType;
 		char vehicleDefIndex;
 		int entityEventSequence;
@@ -1712,6 +1827,8 @@ namespace game
 		int introShotsFired;
 		$94851E490C69050A57D20547D7862040 hud;
 	};
+	static_assert(sizeof(playerState_s) == 0x2A08);
+
 
 	struct serverSnapshot_t
 	{
@@ -1724,6 +1841,8 @@ namespace game
 		int firstActorIndex;
 		int matchStateIndex;
 	};
+	static_assert(sizeof(serverSnapshot_t) == 0x64);
+
 
 	struct ArchivedMatchState
 	{
@@ -1732,6 +1851,8 @@ namespace game
 		int roundsPlayed;
 		int worldFields[8];
 	};
+	static_assert(sizeof(ArchivedMatchState) == 0x30);
+
 
 	enum scoreboardColumnType_t
 	{
@@ -1773,6 +1894,8 @@ namespace game
 		bool initialPlayersConnected;
 		unsigned int talkFlags;
 	};
+	static_assert(sizeof(UnarchivedMatchState) == 0x44);
+
 
 	struct __declspec(align(8)) MatchState
 	{
@@ -1781,6 +1904,7 @@ namespace game
 		UnarchivedMatchState unarchivedState;
 		unsigned int pad[1];
 	};
+	static_assert(sizeof(MatchState) == 0x80);
 
 	enum team_t
 	{
@@ -1813,27 +1937,37 @@ namespace game
 		int prestige;
 		int lastDaysPlayed;
 	};
+	static_assert(sizeof($137F9095F7597C63EB19E8F61F5887B0) == 0x4);
+
 	struct netUInt64
 	{
 		unsigned int low;
 		unsigned int high;
 	};
+	static_assert(sizeof(netUInt64) == 0x8);
+
 
 	union $A4571D12BF10171BF9A5B9DFBEBF42AF
 	{
 		unsigned __int64 xuid;
 		netUInt64 xuid64;
 	};
+	static_assert(sizeof($A4571D12BF10171BF9A5B9DFBEBF42AF) == 0x8);
+
 	union $A860F8FD49AE0869BFEBEBC3953ECFC3
 	{
 		unsigned __int64 leagueTeamID;
 		netUInt64 leagueTeamID64;
 	};
+	static_assert(sizeof($A860F8FD49AE0869BFEBEBC3953ECFC3) == 0x8);
+
 	union $45B0B4E60D713732115D2818FB67A7F4
 	{
 		unsigned __int64 leagueSubdivisionID;
 		netUInt64 leagueSubdivisionID64;
 	};
+	static_assert(sizeof($45B0B4E60D713732115D2818FB67A7F4) == 0x8);
+
 	enum VehicleAnimState
 	{
 		VEHICLEANIMSTATE_IDLE = 0x0,
@@ -1859,6 +1993,8 @@ namespace game
 		int scoreMultiplier;
 		int currentStreak;
 	};
+
+	static_assert(sizeof(score_s) == 0x48);
 
 	struct __declspec(align(8)) clientState_s
 	{
@@ -1894,6 +2030,8 @@ namespace game
 		int clientUIVisibilityFlags;
 		int offhandWeaponVisible;
 	};
+	static_assert(sizeof(clientState_s) == 0x120);
+
 	struct actorState_s
 	{
 		int actorIndex;
@@ -1905,21 +2043,29 @@ namespace game
 		char name[32];
 		int animScriptedAnim;
 	};
+	static_assert(sizeof(actorState_s) == 0x64);
+
 	struct archivedSnapshot_s
 	{
 		int start;
 		int size;
 	};
+	static_assert(sizeof(archivedSnapshot_s) == 0x8);
+
 	struct cachedClient_s
 	{
 		int playerStateExists;
 		clientState_s cs;
 		playerState_s ps;
 	};
+	static_assert(sizeof(cachedClient_s) == 0x2B30);
+
 	struct cachedActor_s
 	{
 		actorState_s as;
 	};
+	static_assert(sizeof(cachedActor_s) == 0x64);
+
 	struct challenge_t
 	{
 		netadr_t adr;
@@ -1931,11 +2077,15 @@ namespace game
 		int connected;
 		int guid;
 	};
+	static_assert(sizeof(challenge_t) == 0x30);
+
 	struct tempBanSlot_t
 	{
 		int guid;
 		int banTime;
 	};
+	static_assert(sizeof(tempBanSlot_t) == 0x8);
+
 
 	enum connstate_t
 	{
@@ -1964,36 +2114,50 @@ namespace game
 		char opt[8];
 		char reserved[8];
 	};
+	static_assert(sizeof(PartySceNpId) == 0x24);
+
 	struct XNADDR
 	{
 		char addrBuff[37];
 	};
+	static_assert(sizeof(XNADDR) == 0x25);
+
 
 	struct liveAddr
 	{
 		XNADDR xnaddr;
 	};
+	static_assert(sizeof(liveAddr) == 0x25);
+
 
 	struct __declspec(align(4)) platformNetAdr
 	{
 		netadr_t netAddr;
 		liveAddr liveaddr;
 	};
+	static_assert(sizeof(platformNetAdr) == 0x3C);
+
 	struct bdSecurityID
 	{
 		char ab[8];
 	};
+	static_assert(sizeof(bdSecurityID) == 0x8);
+
 	union $4CC444478A5CF1CA3E666352329DBEA9
 	{
 		int rank;
 		int rankPosition;
 	};
+	static_assert(sizeof($4CC444478A5CF1CA3E666352329DBEA9) == 0x4);
+
 	union $6F592E3A475AB50E77AAA300354707EA
 	{
 		int prestige;
 		int divisionID;
 		int daysLastPlayed;
 	};
+	static_assert(sizeof($6F592E3A475AB50E77AAA300354707EA) == 0x4);
+
 	struct PartyMemberTeam
 	{
 		int team;
@@ -2001,6 +2165,8 @@ namespace game
 		int switchTeamTime;
 		int lastTeam;
 	};
+	static_assert(sizeof(PartyMemberTeam) == 0x10);
+
 
 	struct PartyMember
 	{
@@ -2057,6 +2223,8 @@ namespace game
 		unsigned int serverchallenge;
 		int serverChallengeDeadline;
 	};
+	static_assert(sizeof(PartyMember) == 0x140);
+
 
 	struct __declspec(align(8)) playerInfo_t
 	{
@@ -2068,6 +2236,8 @@ namespace game
 		netadr_t remoteAddress;
 		char name[32];
 	};
+	static_assert(sizeof(playerInfo_t) == 0x190);
+
 	struct rateBoostingStats_t
 	{
 		int bytesSent;
@@ -2078,11 +2248,15 @@ namespace game
 		int numClientFrames;
 		int numFrames;
 	};
+	static_assert(sizeof(rateBoostingStats_t) == 0x1C);
+
 	struct EntHandle
 	{
-		unsigned __int16 number;
-		unsigned __int16 infoIndex;
+		unsigned short number;
+		unsigned short infoIndex;
 	};
+	static_assert(sizeof(EntHandle) == 0x4);
+
 	struct entityShared_t
 	{
 		char linked;
@@ -2100,6 +2274,8 @@ namespace game
 		EntHandle ownerNum;
 		int eventTime;
 	};
+	static_assert(sizeof(entityShared_t) == 0x5C);
+
 
 	struct $0FC7FBA79DFCD55B13C79CF33C06C3AC
 	{
@@ -2110,6 +2286,8 @@ namespace game
 		unsigned __int32 ikPriority : 1;
 		unsigned __int32 talkToSpecies : 5;
 	};
+	static_assert(sizeof($0FC7FBA79DFCD55B13C79CF33C06C3AC) == 0x4);
+
 
 	/* 2671 */
 	union $B0545D26085E3DC191D5FA9537D94CF4
@@ -2117,12 +2295,16 @@ namespace game
 		$0FC7FBA79DFCD55B13C79CF33C06C3AC __s0;
 		unsigned int allBits;
 	};
+	static_assert(sizeof($B0545D26085E3DC191D5FA9537D94CF4) == 0x4);
+
 
 	/* 2672 */
 	struct ActorFlags
 	{
 		$B0545D26085E3DC191D5FA9537D94CF4 ___u0;
 	};
+	static_assert(sizeof(ActorFlags) == 0x4);
+
 	enum ai_state_transition_t
 	{
 		AIS_TRANSITION_CANONICAL = 0xFFFFFFFF,
@@ -2159,6 +2341,8 @@ namespace game
 		ai_state_transition_t eTransition;
 		ai_state_t eState;
 	};
+	static_assert(sizeof(ai_transition_cmd_t) == 0x8);
+
 	enum ai_substate_t
 	{
 		STATE_EXPOSED_COMBAT = 0x64,
@@ -2191,6 +2375,8 @@ namespace game
 		unsigned int simulatedStateLevel;
 		actorState_s as;
 	};
+	static_assert(sizeof(ActorState) == 0x128);
+
 
 	/* 2814 */
 	struct ActorShoot
@@ -2207,6 +2393,8 @@ namespace game
 		int bIgnoreLocationalDamage;
 		float debugWeaponAccuracy;
 	};
+	static_assert(sizeof(ActorShoot) == 0x2C);
+
 
 	/* 2815 */
 	struct __declspec(align(4)) ActorOrientation
@@ -2230,6 +2418,8 @@ namespace game
 		bool lockScriptOrient;
 		bool fixedLinkYawOnly;
 	};
+	static_assert(sizeof(ActorOrientation) == 0x50);
+
 	enum ai_orient_mode_t
 	{
 		AI_ORIENT_INVALID = 0x0,
@@ -2250,6 +2440,8 @@ namespace game
 		float fDesiredLookYaw;
 		float fDesiredBodyYaw;
 	};
+	static_assert(sizeof(ai_orient_t) == 0x10);
+
 
 	/* 2817 */
 	struct __declspec(align(4)) ActorPainDeath
@@ -2262,28 +2454,31 @@ namespace game
 		int iDamageTaken;
 		int iDamageYaw;
 		vec3_t damageDir;
-		unsigned __int16 damageHitLoc;
-		unsigned __int16 damageWeapon;
-		unsigned __int16 damageMod;
+		unsigned short damageHitLoc;
+		unsigned short damageWeapon;
+		unsigned short damageMod;
 		int deathContents;
 		int bDropWeapon;
 		bool forceRagdollImmediate;
 		int minPainDamage;
 		bool dieQuietly;
 	};
+	static_assert(sizeof(ActorPainDeath) == 0x38);
+
 
 	/* 2818 */
 	struct __declspec(align(4)) ActorProne
 	{
-		unsigned __int16 animProneLow;
-		unsigned __int16 animProneLevel;
-		unsigned __int16 animProneHigh;
+		unsigned short animProneLow;
+		unsigned short animProneLevel;
+		unsigned short animProneHigh;
 		int bProneOK;
 		float fInvProneAnimLowPitch;
 		float fInvProneAnimHighPitch;
 		float fProneLastDiff;
 		char feetDirection;
 	};
+	static_assert(sizeof(ActorProne) == 0x1C);
 
 	/* 2819 */
 	union $A899A4A44C693354E5CF33C9EDFF92AE
@@ -2291,6 +2486,7 @@ namespace game
 		float fTorsoPitch;
 		float fBodyPitch;
 	};
+	static_assert(sizeof($A899A4A44C693354E5CF33C9EDFF92AE) == 0x4);
 
 	/* 2820 */
 	union $8F7A1F2A0E788339D3BE9A175DA5EAEF
@@ -2298,6 +2494,7 @@ namespace game
 		float fWaistPitch;
 		float fBodyRoll;
 	};
+	static_assert(sizeof($8F7A1F2A0E788339D3BE9A175DA5EAEF) == 0x4);
 
 	/* 2821 */
 	struct actor_prone_info_s
@@ -2311,6 +2508,7 @@ namespace game
 		$A899A4A44C693354E5CF33C9EDFF92AE ___u6;
 		$8F7A1F2A0E788339D3BE9A175DA5EAEF ___u7;
 	};
+	static_assert(sizeof(actor_prone_info_s) == 0x18);
 
 	/* 2822 */
 	struct ActorCachedInfo
@@ -2319,6 +2517,7 @@ namespace game
 		vec3_t pos;
 		vec3_t dir;
 	};
+	static_assert(sizeof(ActorCachedInfo) == 0x1C);
 
 	/* 2823 */
 	struct ActorLookAtInfo
@@ -2329,15 +2528,16 @@ namespace game
 		float fLookAtTurnAccel;
 		float fLookAtAnimYawLimit;
 		float fLookAtYawLimit;
-		unsigned __int16 animLookAtStraight;
-		unsigned __int16 animLookAtLeft;
-		unsigned __int16 animLookAtRight;
+		unsigned short animLookAtStraight;
+		unsigned short animLookAtLeft;
+		unsigned short animLookAtRight;
 		bool bDoLookAt;
 		bool bLookAtSetup;
 		int iLookAtBlendEndTime;
 		float fLookAtAnimBlendRate;
 		float fLookAtLimitBlendRate;
 	};
+	static_assert(sizeof(ActorLookAtInfo) == 0x34);
 
 	/* 2824 */
 	struct ActorCoverArrivalInfo
@@ -2350,13 +2550,16 @@ namespace game
 		float arrivalYaw;
 		EntHandle scriptedArrivalEnt;
 	};
+	static_assert(sizeof(ActorCoverArrivalInfo) == 0x28);
 
 	/* 2677 */
 	struct SentientHandle
 	{
-		unsigned __int16 number;
-		unsigned __int16 infoIndex;
+		unsigned short number;
+		unsigned short infoIndex;
 	};
+	static_assert(sizeof(SentientHandle) == 0x4);
+
 	struct __declspec(align(4)) pathnode_dynamic_t
 	{
 		SentientHandle pOwner;
@@ -2364,12 +2567,14 @@ namespace game
 		int iValidTime[3];
 		int dangerousNodeTime[3];
 		int inPlayerLOSTime;
-		__int16 wLinkCount;
-		__int16 wOverlapCount;
-		__int16 turretEntNumber;
-		__int16 userCount;
+		short wLinkCount;
+		short wOverlapCount;
+		short turretEntNumber;
+		short userCount;
 		bool hasBadPlaceLink;
 	};
+	static_assert(sizeof(pathnode_dynamic_t) == 0x30);
+
 	enum nodeType
 	{
 		NODE_BADNODE = 0x0,
@@ -2402,37 +2607,42 @@ namespace game
 		float nodeCost;
 		int linkIndex;
 	};
+	static_assert(sizeof($73F238679C0419BE2C31C6559E8604FC) == 0x4);
+
 
 
 	struct __declspec(align(4)) pathlink_s
 	{
 		float fDist;
-		unsigned __int16 nodeNum;
+		unsigned short nodeNum;
 		char disconnectCount;
 		char negotiationLink;
 		char flags;
 		char ubBadPlaceCount[5];
 	};
+	static_assert(sizeof(pathlink_s) == 0x10);
 
 	struct pathnode_constant_t
 	{
 		nodeType type;
 		int spawnflags;
-		unsigned __int16 targetname;
-		unsigned __int16 script_linkName;
-		unsigned __int16 script_noteworthy;
-		unsigned __int16 target;
-		unsigned __int16 animscript;
+		unsigned short targetname;
+		unsigned short script_linkName;
+		unsigned short script_noteworthy;
+		unsigned short target;
+		unsigned short animscript;
 		int animscriptfunc;
 		vec3_t vOrigin;
 		float fAngle;
 		vec2_t forward;
 		float fRadius;
 		float minUseDistSq;
-		__int16 wOverlapNode[2];
-		unsigned __int16 totalLinkCount;
+		short wOverlapNode[2];
+		unsigned short totalLinkCount;
 		pathlink_s* Links;
 	};
+	static_assert(sizeof(pathnode_constant_t) == 0x44);
+
 	struct pathnode_t;
 	struct pathnode_transient_t
 	{
@@ -2444,12 +2654,16 @@ namespace game
 		float fHeuristic;
 		$73F238679C0419BE2C31C6559E8604FC ___u6;
 	};
+	static_assert(sizeof(pathnode_transient_t) == 0x1C);
+
 	struct pathnode_t
 	{
 		pathnode_constant_t constant;
 		pathnode_dynamic_t dynamic;
 		pathnode_transient_t transient;
 	};
+	static_assert(sizeof(pathnode_t) == 0x90);
+
 	/* 2681 */
 
 
@@ -2462,8 +2676,8 @@ namespace game
 		int numCoverNodesInGoal;
 		int iPotentialCoverNodeCount;
 		bool keepNodeDuringScriptedAnim;
-		unsigned __int16 potentialCoverNode[10];
-		unsigned __int16 potentialAmbushNode[32];
+		unsigned short potentialCoverNode[10];
+		unsigned short potentialAmbushNode[32];
 		int iPotentialAmbushNodeCount;
 		int nextFindBestCoverTime;
 		int coverSearchInterval;
@@ -2477,6 +2691,8 @@ namespace game
 		int dangerReactGoalTime;
 		int dangerReactDuration;
 	};
+	static_assert(sizeof(ActorNodeSelect) == 0x128);
+
 
 	/* 2766 */
 	struct ActorSight
@@ -2491,7 +2707,7 @@ namespace game
 		int faceLikelyEnemyPathNeedRecalculateTime;
 		pathnode_t* faceLikelyEnemyPathNode;
 		int iTraceCount;
-		unsigned __int16 vis_blockers[72];
+		unsigned short vis_blockers[72];
 		float fovDotBusy;
 		int latency;
 		float upAimLimit;
@@ -2499,40 +2715,48 @@ namespace game
 		float rightAimLimit;
 		float leftAimLimit;
 	};
+	static_assert(sizeof(ActorSight) == 0xE0);
+
 
 	/* 2826 */
 	struct ActorString
 	{
-		unsigned __int16 properName;
-		unsigned __int16 weaponName;
-		unsigned __int16 primaryWeaponName;
-		unsigned __int16 secondaryWeaponName;
-		unsigned __int16 sideArmName;
-		unsigned __int16 anim_pose;
-		unsigned __int16 scriptState;
-		unsigned __int16 lastScriptState;
-		unsigned __int16 stateChangeReason;
+		unsigned short properName;
+		unsigned short weaponName;
+		unsigned short primaryWeaponName;
+		unsigned short secondaryWeaponName;
+		unsigned short sideArmName;
+		unsigned short anim_pose;
+		unsigned short scriptState;
+		unsigned short lastScriptState;
+		unsigned short stateChangeReason;
 		int iUseHintString;
 	};
+	static_assert(sizeof(ActorString) == 0x18);
+
 
 	/* 2827 */
 	struct ActorAnimSets
 	{
-		unsigned __int16 aimLow;
-		unsigned __int16 aimLevel;
-		unsigned __int16 aimHigh;
-		unsigned __int16 shootLow;
-		unsigned __int16 shootLevel;
-		unsigned __int16 shootHigh;
+		unsigned short aimLow;
+		unsigned short aimLevel;
+		unsigned short aimHigh;
+		unsigned short shootLow;
+		unsigned short shootLevel;
+		unsigned short shootHigh;
 	};
+	static_assert(sizeof(ActorAnimSets) == 0xC);
+
 
 	/* 2828 */
 	struct __declspec(align(4)) scr_animscript_t
 	{
 		int func;
 		int endFunc;
-		unsigned __int16 name;
+		unsigned short name;
 	};
+	static_assert(sizeof(scr_animscript_t) == 0xC);
+
 	enum ai_stance_e
 	{
 		STANCE_BAD = 0x0,
@@ -2566,7 +2790,7 @@ namespace game
 	struct ActorAnimation
 	{
 		ai_stance_e eAllowedStances;
-		unsigned __int16 AnimScriptHandle;
+		unsigned short AnimScriptHandle;
 		scr_animscript_t* pAnimScriptFunc;
 		scr_animscript_t* pPrevAnimScriptFunc;
 		scr_animscript_t AnimScriptSpecific;
@@ -2580,6 +2804,7 @@ namespace game
 		ai_animmode_t eScriptSetAnimMode;
 		float fAnimTranslationScale;
 	};
+	static_assert(sizeof(ActorAnimation) == 0x34);
 
 	/* 2696 */
 	struct pathpoint_t
@@ -2589,18 +2814,19 @@ namespace game
 		float fOrigLength;
 		int iNodeNum;
 	};
+	static_assert(sizeof(pathpoint_t) == 0x1C);
 
 	/* 2697 */
 	struct path_t
 	{
 		pathpoint_t pts[32];
-		__int16 wPathLen;
-		__int16 wOrigPathLen;
-		__int16 wDodgeCount;
-		__int16 wNegotiationStartNode;
-		__int16 lookaheadNextNode;
-		__int16 pathChangeNotifyNode;
-		__int16 wDodgeEntity;
+		short wPathLen;
+		short wOrigPathLen;
+		short wDodgeCount;
+		short wNegotiationStartNode;
+		short lookaheadNextNode;
+		short pathChangeNotifyNode;
+		short wDodgeEntity;
 		vec3_t vFinalGoal;
 		vec3_t vStartPos;
 		vec3_t lookaheadDir;
@@ -2626,6 +2852,7 @@ namespace game
 		float physRadius;
 		float physHeight;
 	};
+	static_assert(sizeof(path_t) == 0x414);
 
 	/* 2830 */
 	struct path_trim_t
@@ -2633,6 +2860,8 @@ namespace game
 		int iIndex;
 		int iDelta;
 	};
+	static_assert(sizeof(path_trim_t) == 0x8);
+
 	enum ai_badplace_t
 	{
 		AI_BADPLACE_NONE = 0x0,
@@ -2672,6 +2901,8 @@ namespace game
 		bool isInBadPlace;
 		char badplaceRecheckPathLen;
 	};
+	static_assert(sizeof(ActorNavigation) == 0x488);
+
 	enum AlertLevel
 	{
 		AI_ALERTNESS_ASLEEP = 0x0,
@@ -2726,6 +2957,7 @@ namespace game
 		bool damageShield;
 		float frontShieldAngleCos;
 	};
+	static_assert(sizeof(ActorCombat) == 0x64);
 
 	/* 2833 */
 	struct __declspec(align(4)) ActorReact
@@ -2739,6 +2971,7 @@ namespace game
 		vec3_t newEnemyReactionPos;
 		bool newEnemyReaction;
 	};
+	static_assert(sizeof(ActorReact) == 0x30);
 
 	/* 2767 */
 	struct potential_threat_t
@@ -2746,6 +2979,7 @@ namespace game
 		bool isEnabled;
 		vec2_t direction;
 	};
+	static_assert(sizeof(potential_threat_t) == 0xC);
 
 
 
@@ -2757,6 +2991,7 @@ namespace game
 		float distToEnt;
 		pathnode_t* node;
 	};
+	static_assert(sizeof(ActorSecondaryTarget) == 0x14);
 
 	/* 2769 */
 	struct ActorThreat
@@ -2779,13 +3014,14 @@ namespace game
 		float footstepDetectDistWalkSq;
 		float footstepDetectDistSprintSq;
 	};
+	static_assert(sizeof(ActorThreat) == 0x70);
 
 	/* 2834 */
 	struct ActorGrenade
 	{
 		float grenadeAwareness;
 		EntHandle pGrenade;
-		unsigned __int16 GrenadeTossMethod;
+		unsigned short GrenadeTossMethod;
 		int bGrenadeTossValid;
 		int bGrenadeTargetValid;
 		int iGrenadeAmmo;
@@ -2803,14 +3039,17 @@ namespace game
 		bool grenadeTossWithBounce;
 		vec3_t pickupPos;
 	};
+	static_assert(sizeof(ActorGrenade) == 0x6C);
 
 	/* 2835 */
 	struct __declspec(align(2)) ActorTurret
 	{
 		gentity_s* pTurret;
-		unsigned __int16 turretAnim;
+		unsigned short turretAnim;
 		char turretAnimSet;
 	};
+
+	static_assert(sizeof(ActorTurret) == 0x8);
 
 	/* 2836 */
 	struct actor_goal_s
@@ -2822,6 +3061,8 @@ namespace game
 		pathnode_t* node;
 		gentity_s* volume;
 	};
+	static_assert(sizeof(actor_goal_s) == 0x28);
+
 	enum aiGoalSources
 	{
 		AI_GOAL_SRC_SCRIPT_GOAL = 0x0,
@@ -2846,6 +3087,8 @@ namespace game
 		bool moveHistoryConsistent;
 		vec2_t moveHistory[10];
 	};
+	static_assert(sizeof(ActorGoal) == 0xC0);
+
 
 	/* 2838 */
 	struct ActorSuppression
@@ -2856,6 +3099,8 @@ namespace game
 		int suppressionStartTime;
 		float suppressionMeter;
 	};
+	static_assert(sizeof(ActorSuppression) == 0x14);
+
 	enum DelayedWeapDropState
 	{
 		ACTOR_WEAP_DROP_NONE = 0x0,
@@ -2867,10 +3112,12 @@ namespace game
 	{
 		vec3_t matrix[4];
 		int time;
-		unsigned __int16 tagName;
+		unsigned short tagName;
 		DelayedWeapDropState state;
 		int weaponIndex;
 	};
+	static_assert(sizeof(ActorDelayedWeaponDrop) == 0x40);
+
 
 	/* 2770 */
 	struct vis_cache_t
@@ -2879,6 +3126,7 @@ namespace game
 		int iLastUpdateTime;
 		int iLastVisTime;
 	};
+	static_assert(sizeof(vis_cache_t) == 0xC);
 
 	/* 2771 */
 	struct __declspec(align(4)) sentient_info_t
@@ -2893,6 +3141,8 @@ namespace game
 		int iPathTestTime;
 		bool bPathTestResult;
 	};
+	static_assert(sizeof(sentient_info_t) == 0x34);
+
 	struct __declspec(align(4)) sentient_t
 	{
 		gentity_s* ent;
@@ -2913,7 +3163,7 @@ namespace game
 		EntHandle syncedMeleeEnt;
 		EntHandle targetEnt;
 		EntHandle scriptTargetEnt;
-		unsigned __int16 scriptTargetTag;
+		unsigned short scriptTargetTag;
 		float entityTargetThreat;
 		int meleeAttackerSpot[4];
 		float attackerAccuracy;
@@ -2929,6 +3179,7 @@ namespace game
 		int banNodeTime;
 		bool bInMeleeCharge;
 	};
+	static_assert(sizeof(sentient_t) == 0x8C);
 
 	/* 2840 */
 	struct ai_suppression_t
@@ -2938,6 +3189,8 @@ namespace game
 		vec3_t clipPlane;
 		int movementOnly;
 	};
+	static_assert(sizeof(ai_suppression_t) == 0x18);
+
 	enum aiphys_t
 	{
 		AIPHYS_BAD = 0x0,
@@ -2955,16 +3208,20 @@ namespace game
 		int firstChildIndex;
 		int partitionIndex;
 	};
+	static_assert(sizeof(CollisionAabbTreeIndex) == 0x4);
+
 
 	/* 2569 */
 	struct CollisionAabbTree
 	{
 		vec3_t origin;
-		unsigned __int16 materialIndex;
-		unsigned __int16 childCount;
+		unsigned short materialIndex;
+		unsigned short childCount;
 		vec3_t halfSize;
 		CollisionAabbTreeIndex u;
 	};
+	static_assert(sizeof(CollisionAabbTree) == 0x20);
+
 	struct cplane_s
 	{
 		vec3_t normal;
@@ -2973,6 +3230,7 @@ namespace game
 		char signbits;
 		char pad[2];
 	};
+	static_assert(sizeof(cplane_s) == 0x14);
 
 	/* 1565 */
 	struct cbrushside_t
@@ -2981,6 +3239,7 @@ namespace game
 		int cflags;
 		int sflags;
 	};
+	static_assert(sizeof(cbrushside_t) == 0xC);
 
 	struct __declspec(align(8)) cbrush_t
 	{
@@ -2994,48 +3253,21 @@ namespace game
 		unsigned int numverts;
 		vec3_t* verts;
 	};
+	static_assert(sizeof(cbrush_t) == 0x60);
+
 	union $FB97575D68DB08DF88027B6A570388C5
 	{
 		CollisionAabbTree* tree;
 		cbrush_t* brush;
 	};
+	static_assert(sizeof($FB97575D68DB08DF88027B6A570388C5) == 0x4);
+
 	struct col_prim_t
 	{
 		int type;
 		$FB97575D68DB08DF88027B6A570388C5 ___u1;
 	};
-	//struct __declspec(align(16)) colgeom_visitor_inlined_t300 //wrong, cppobj
-	//{
-	//	int nprims;
-	//	bool overflow;
-	//	col_prim_t prims[300];
-	//};
-
-	//struct gjk_base_t
-	//{
-	//	__declspec(align(16)) phys_vec3 m_aabb_mn_loc;
-	//	phys_vec3 m_aabb_mx_loc;
-	//	unsigned int m_gjk_geom_id;
-	//	phys_mat44* m_xform_;
-	//	gjk_base_t* m_next_geom;
-	//	unsigned int m_flags;
-	//	int stype;
-	//	int m_contents;
-	//};
-
-
-	//const struct gjkcc_input_t
-	//{
-	//	unsigned int gjkcc_id;
-	//	bool is_server_thread;
-	//	colgeom_visitor_inlined_t300 proximity_data;
-	//	int proximity_mask;
-	//	int m_ent_num;
-	//	unsigned int m_gjk_query_flags;
-	//	char pad[0x50];//gjk_base_t* m_gjk_cg;  //char pad[4];
-	//	phys_mat44* m_mat;
-	//	gjccc_create_t* create_info;
-	//};
+	static_assert(sizeof(col_prim_t) == 0x8);
 
 	enum AI_STAIRS_STATE
 	{
@@ -3044,7 +3276,6 @@ namespace game
 		AI_STAIRS_DOWN = 0x2,
 		NUM_STAIRS_STATES = 0x3,
 	};
-
 	struct __declspec(align(8)) actor_physics_t
 	{
 		vec3_t vOrigin;
@@ -3072,13 +3303,14 @@ namespace game
 		vec3_t vHitNormal;
 		char bStuck;
 		char bDeflected;
-		char pad[0x24];//gjkcc_input_t* m_gjkcc_input;
-		char _pad[0x90F];//colgeom_visitor_inlined_t300 proximity_data;
-
+		char pad[0x8];//gjkcc_input_t* m_gjkcc_input;
+		char _pad[0x9F8];//char _pad[0xA00];//colgeom_visitor_inlined_t<300> proximity_data;
 		bool pathGoingDown;
 		AI_STAIRS_STATE stairsState;
 		int groundEntityTimestamp;
 	};
+
+	static_assert(sizeof(actor_physics_t) == 0xB20);
 
 	/* 2844 */
 	struct ActorCoverInfluenceInfo
@@ -3087,6 +3319,8 @@ namespace game
 		float weightAdjust;
 		int timeAdded;
 	};
+	static_assert(sizeof(ActorCoverInfluenceInfo) == 0xC);
+
 	enum AISpecies
 	{
 		AI_SPECIES_DOG = 0x0,
@@ -3136,6 +3370,9 @@ namespace game
 		const char* pszDebugInfo;
 		ActorCoverInfluenceInfo cover_influencers[8];
 	};
+	static_assert(sizeof(actor_t) == 0x2720);
+
+
 	enum TurretRotateState
 	{
 		TURRET_ROTATE_STOPPED = 0x0,
@@ -3200,20 +3437,25 @@ namespace game
 		TurretRotateState turretRotateState;
 		vec3_t previousAngles;
 	};
+	static_assert(sizeof(TurretInfo) == 0x11C);
+
 	struct DestructibleBurnData
 	{
 		int burnTime;
 		unsigned int fx;
 		int sndId;
 	};
+	static_assert(sizeof(DestructibleBurnData) == 0xC);
 
 	struct DESTRUCTIBLE_PIECE_INFO
 	{
-		__int16 health;
+		short health;
 		int xdollHandle;
 		unsigned int fx;
 		DestructibleBurnData burnData;
 	};
+	static_assert(sizeof(DESTRUCTIBLE_PIECE_INFO) == 0x18);
+
 	struct PhysPreset
 	{
 		const char* name;
@@ -3232,28 +3474,31 @@ namespace game
 		vec3_t buoyancyBoxMin;
 		vec3_t buoyancyBoxMax;
 	};
+	static_assert(sizeof(PhysPreset) == 0x54);
 
 	union $15188755ECCB7FF50C7B622D9D67D228
 	{
-		char pad[0x124];
-		char _pad[0x124];
+		char pad[0x4];
 		//FxElemDef* elemDefs;
 		//FxElemDef* localElemDefs;
 	};
+	static_assert(sizeof($15188755ECCB7FF50C7B622D9D67D228) == 0x4);
+
 	struct FxFloatRange
 	{
 		float base;
 		float amplitude;
 	};
+	static_assert(sizeof(FxFloatRange) == 0x8);
 
 	const struct FxEffectDef
 	{
 		const char* name;
-		unsigned __int16 flags;
+		unsigned short flags;
 		char efPriority;
-		__int16 elemDefCountLooping;
-		__int16 elemDefCountOneShot;
-		__int16 elemDefCountEmission;
+		short elemDefCountLooping;
+		short elemDefCountOneShot;
+		short elemDefCountEmission;
 		int totalSize;
 		int msecLoopingLife;
 		int msecNonLoopingLife;
@@ -3265,10 +3510,12 @@ namespace game
 		int occlusionQueryFadeOut;
 		FxFloatRange occlusionQueryScaleRange;
 	};
+	static_assert(sizeof(FxEffectDef) == 0x4C);
+
 
 	struct DestructibleStage
 	{
-		unsigned __int16 showBone;
+		unsigned short showBone;
 		float breakHealth;
 		float maxTime;
 		unsigned int flags;
@@ -3276,9 +3523,10 @@ namespace game
 		const char* breakSound;
 		const char* breakNotify;
 		const char* loopSound;
-		char _pad[0xF8];//XModel* spawnModel[3];
+		char _pad[0xC];//XModel* spawnModel[3];
 		PhysPreset* physPreset;
 	};
+	static_assert(sizeof(DestructibleStage) == 0x30);
 
 	struct DestructiblePiece
 	{
@@ -3290,27 +3538,27 @@ namespace game
 		float meleeDamageScale;
 		float impactDamageScale;
 		float entityDamageTransfer;
-		char pad[0xA88];
+		char pad[0x4];
 		//PhysConstraints* physConstraints;
 		int health;
 		const char* damageSound;
 		FxEffectDef* burnEffect;
 		const char* burnSound;
-		unsigned __int16 enableLabel;
+		unsigned short enableLabel;
 		int hideBones[5];
 	};
-
+	static_assert(sizeof(DestructiblePiece) == 0x138);
 	struct DestructibleDef
 	{
 		const char* name;
-		char _pad[0xF8];
-		char pad[0xF8];
-		//XModel* model;
-		//XModel* pristineModel;
+		char _pad[0x4];		//XModel* model;
+		char pad[0x4];		//XModel* pristineModel;
 		int numPieces;
 		DestructiblePiece* pieces;
 		int clientOnly;
 	};
+	static_assert(sizeof(DestructibleDef) == 0x18);
+
 
 	struct __declspec(align(4)) Destructible
 	{
@@ -3321,10 +3569,12 @@ namespace game
 		int pieceCount;
 		DestructibleDef* ddef;
 		unsigned int flags;
-		char pad[0x10];
+		char pad[0x50];
 		//DestructibleState states[5];
 		char bHasBeenHit;
 	};
+	static_assert(sizeof(Destructible) == 0x70);
+
 
 	struct flame_timed_damage_t
 	{
@@ -3336,19 +3586,23 @@ namespace game
 		int end_timestamp;
 		int lastupdate_timestamp;
 	};
+	static_assert(sizeof(flame_timed_damage_t) == 0x1C);
+
 	struct $8B2B5A2D6EB549120AB558355B552286
 	{
-		unsigned __int16 notifyString;
+		unsigned short notifyString;
 		unsigned int index;
 		char stoppable;
 		int basetime;
 		int duration;
 	};
+	static_assert(sizeof($8B2B5A2D6EB549120AB558355B552286) == 0x14);
+
 	struct tagInfo_t
 	{
 		gentity_s* parent;
 		gentity_s* next;
-		unsigned __int16 name;
+		unsigned short name;
 		bool blendToParent;
 		bool blendOnlyYaw;
 		bool collisionPhysics;
@@ -3356,6 +3610,8 @@ namespace game
 		vec3_t axis[4];
 		vec3_t parentInvAxis[4];
 	};
+	static_assert(sizeof(tagInfo_t) == 0x74);
+
 	struct gclient_t;
 	struct gentity_s
 	{
@@ -3366,8 +3622,8 @@ namespace game
 		sentient_t* sentient;
 		TurretInfo* pTurretInfo;
 		Destructible* destructible;
-		char pad[0x2260];//vehicle_t* vehicle;
-		unsigned __int16 model;
+		char pad[0x4];//vehicle_t* vehicle;
+		unsigned short model;
 		char physicsObject;
 		char takedamage;
 		char active;
@@ -3375,10 +3631,10 @@ namespace game
 		char handler;
 		char team;
 		char avoidHandle;
-		unsigned __int16 classname;
-		unsigned __int16 target;
-		unsigned __int16 targetname;
-		unsigned __int16 script_noteworthy;
+		unsigned short classname;
+		unsigned short target;
+		unsigned short targetname;
+		unsigned short script_noteworthy;
 		unsigned int attachIgnoreCollision;
 		int spawnflags;
 		int flags;
@@ -3400,10 +3656,10 @@ namespace game
 		$8B2B5A2D6EB549120AB558355B552286 snd_wait;
 		tagInfo_t* tagInfo;
 		gentity_s* tagChildren;
-		unsigned __int16 attachModelNames[19];
-		unsigned __int16 attachTagNames[19];
-		char __pad[0x8];//XAnimTree_s* pAnimTree;
-		unsigned __int16 disconnectedLinks;
+		unsigned short attachModelNames[19];
+		unsigned short attachTagNames[19];
+		char __pad[0x4];//XAnimTree_s* pAnimTree;
+		unsigned short disconnectedLinks;
 		int iDisconnectTime;
 		int useCount;
 		int physObjId;
@@ -3412,7 +3668,29 @@ namespace game
 		int ikPlayerclipTerrainTime;
 		int ikDisableTerrainMappingTime;
 	};
+	static_assert(sizeof(gentity_s) == 0x031C);
 
+	struct clientSnapshot_t
+	{
+
+		playerState_s ps;
+		int entityCount;
+		int clientCount;
+		int actorCount;
+		int matchStateIndex;
+		int firstEntityIndex;
+		int firstClientIndex;
+		int firstActorIndex;
+		int messageSent;
+		int messageAcked;
+		int messageSize;
+		int serverTime;
+		int physicsTime;
+		int timeDelta;
+		int baselineSnap;
+	};
+
+	static_assert(sizeof(clientSnapshot_t) == 0x2A40);
 	struct client_s
 	{
 		clientHeader_t header;
@@ -3456,7 +3734,7 @@ namespace game
 		__declspec(align(128)) char netchanOutgoingBuffer[65536];
 		char netchanIncomingBuffer[2048];
 		int guid;
-		unsigned __int16 scriptId;
+		unsigned short scriptId;
 		bool bIsSplitscreenClient;
 		bool bIsSecondScreenClient;
 		int bIsTestClient;
@@ -3557,6 +3835,8 @@ namespace game
 		rateBoostingStats_t rateBoostingStats;
 		int rateBoostingEnabled;
 	};
+	static_assert(sizeof(serverStatic_t) == 0xEB00);
+
 
 	enum sessionState_t
 	{
@@ -3575,6 +3855,8 @@ namespace game
 	{
 		int location;
 	};
+	static_assert(sizeof(playerTeamState_t) == 0x4);
+
 
 	struct __declspec(align(8)) clientSession_t
 	{
@@ -3583,7 +3865,7 @@ namespace game
 		int killCamEntity;
 		int killCamTargetEntity;
 		int archiveTime;
-		unsigned __int16 scriptPersId;
+		unsigned short scriptPersId;
 		clientConnected_t connected;
 		usercmd_s cmd;
 		usercmd_s oldcmd;
@@ -3603,7 +3885,7 @@ namespace game
 		int psOffsetTime;
 		int scoreboardColumnCache[26];
 	};
-
+	static_assert(sizeof(clientSession_t) == 0x280);
 
 	struct viewClamp
 	{
@@ -3611,6 +3893,7 @@ namespace game
 		vec2_t current;
 		vec2_t goal;
 	};
+	static_assert(sizeof(viewClamp) == 0x18);
 
 	struct viewClampState
 	{
@@ -3621,6 +3904,7 @@ namespace game
 		float totalTime;
 		float startTime;
 	};
+	static_assert(sizeof(viewClampState) == 0x40);
 
 	struct gclient_t
 	{
@@ -3686,10 +3970,11 @@ namespace game
 		int revive;
 		int reviveTime;
 		int disallowVehicleUsage;
-		unsigned __int16 attachShieldTagName;
+		unsigned short attachShieldTagName;
 		int lastStand;
 		int lastStandTime;
 	};
+	static_assert(sizeof(gclient_t) == 0x5808);
 
 }
 

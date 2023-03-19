@@ -1663,7 +1663,6 @@ namespace game
 		int flags;
 	};
 	static_assert(sizeof(LerpEntityStateTurret) == 0x20);
-	//////////////checked above
 
 	union $41090544F01B971CEA6978417397BD1B
 	{

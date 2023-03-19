@@ -430,12 +430,12 @@ namespace gsc
                 [](unsigned int entnum) -> scripting::script_value
                 {
                     const auto entity = &game::g_entities[entnum];
-                    return entity->eFlags2;
+                    return entity->s.lerp.eFlags2;
                 },
                     [](unsigned int entnum, const scripting::script_value& value)
                 {
                     const auto entity = &game::g_entities[entnum];
-                    entity->eFlags2 = value.as<int>();
+                    entity->s.lerp.eFlags2 = value.as<int>();
                 }
             );
 

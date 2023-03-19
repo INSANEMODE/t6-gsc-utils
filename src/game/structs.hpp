@@ -24,6 +24,63 @@ namespace game
 		SCRIPTINSTANCE_SERVER,
 		SCRIPTINSTANCE_CLIENT,
 	};
+	enum netsrc_t
+	{
+		NS_CLIENT1 = 0x0,
+		NS_CLIENT2 = 0x1,
+		NS_CLIENT3 = 0x2,
+		NS_CLIENT4 = 0x3,
+		NS_SERVER = 0x4,
+		NS_PACKET = 0x5,
+		NS_NULL = -1,
+	};
+
+	enum netadrtype_t
+	{
+		NA_BOT = 0x0,
+		NA_BAD = 0x1,
+		NA_LOOPBACK = 0x2,
+		NA_BROADCAST = 0x3,
+		NA_IP = 0x4,
+	};
+
+	enum ClientState_t
+	{
+		CS_FREE,
+		CS_ZOMBIE,
+		CS_RECONNECTING,
+		CS_CONNECTED,
+		CS_CLIENTLOADING,
+		CS_ACTIVE,
+	};
+
+	enum team_t
+	{
+		TEAM_FREE = 0x0,
+		TEAM_BAD = 0x0,
+		TEAM_ALLIES = 0x1,
+		TEAM_AXIS = 0x2,
+		TEAM_THREE = 0x3,
+		TEAM_FOUR = 0x4,
+		TEAM_FIVE = 0x5,
+		TEAM_SIX = 0x6,
+		TEAM_SEVEN = 0x7,
+		TEAM_EIGHT = 0x8,
+		TEAM_NUM_PLAYING_TEAMS = 0x9,
+		TEAM_SPECTATOR = 0x9,
+		TEAM_NUM_TEAMS = 0xA,
+		TEAM_LOCALPLAYERS = 0xB,
+		TEAM_FIRST_PLAYING_TEAM = 0x1,
+		TEAM_LAST_PLAYING_TEAM = 0x8,
+	};
+	enum ffa_team_t
+	{
+		TEAM_FFA_NONE = 0x0,
+		TEAM_FFA_AXIS = 0x1,
+		TEAM_FFA_ALLIES = 0x2,
+		TEAM_FFA_THREE = 0x3,
+	};
+
 	enum gclientFlag
 	{
 		NOCLIP = 1 << 0,
@@ -66,35 +123,6 @@ namespace game
 		FL_MOVER_SLIDE = 0x80000000,
 	};
 
-	enum ClientState_t
-	{
-		CS_FREE,
-		CS_ZOMBIE,
-		CS_RECONNECTING,
-		CS_CONNECTED,
-		CS_CLIENTLOADING,
-		CS_ACTIVE,
-	};
-
-	enum netsrc_t
-	{
-		NS_CLIENT1 = 0x0,
-		NS_CLIENT2 = 0x1,
-		NS_CLIENT3 = 0x2,
-		NS_CLIENT4 = 0x3,
-		NS_SERVER = 0x4,
-		NS_PACKET = 0x5,
-		NS_NULL = -1,
-	};
-
-	enum netadrtype_t
-	{
-		NA_BOT = 0x0,
-		NA_BAD = 0x1,
-		NA_LOOPBACK = 0x2,
-		NA_BROADCAST = 0x3,
-		NA_IP = 0x4,
-	};
 	struct scr_entref_t
 	{
 		unsigned short entnum;
@@ -2516,32 +2544,6 @@ namespace game
 	};
 	static_assert(sizeof(MatchState) == 0x80);
 
-	enum team_t
-	{
-		TEAM_FREE = 0x0,
-		TEAM_BAD = 0x0,
-		TEAM_ALLIES = 0x1,
-		TEAM_AXIS = 0x2,
-		TEAM_THREE = 0x3,
-		TEAM_FOUR = 0x4,
-		TEAM_FIVE = 0x5,
-		TEAM_SIX = 0x6,
-		TEAM_SEVEN = 0x7,
-		TEAM_EIGHT = 0x8,
-		TEAM_NUM_PLAYING_TEAMS = 0x9,
-		TEAM_SPECTATOR = 0x9,
-		TEAM_NUM_TEAMS = 0xA,
-		TEAM_LOCALPLAYERS = 0xB,
-		TEAM_FIRST_PLAYING_TEAM = 0x1,
-		TEAM_LAST_PLAYING_TEAM = 0x8,
-	};
-	enum ffa_team_t
-	{
-		TEAM_FFA_NONE = 0x0,
-		TEAM_FFA_AXIS = 0x1,
-		TEAM_FFA_ALLIES = 0x2,
-		TEAM_FFA_THREE = 0x3,
-	};
 	union $137F9095F7597C63EB19E8F61F5887B0
 	{
 		int prestige;

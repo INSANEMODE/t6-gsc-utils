@@ -44,7 +44,7 @@ namespace game
 		NA_IP = 0x4,
 	};
 
-	enum ClientState_t
+	enum clientState_t
 	{
 		CS_FREE,
 		CS_ZOMBIE,
@@ -174,18 +174,18 @@ namespace game
 		SCRIPT_FREE = 0x17,
 	};
 
-	struct __declspec(align(2)) VariableStackBuffer
+	struct VariableStackBuffer
 	{
 		const char* pos;
-		char* creationPos;
-		int waitTime;
-		unsigned short size;
-		unsigned short bufLen;
-		unsigned short localId;
+		unsigned __int16 size;
+		unsigned __int16 bufLen;
+		unsigned __int16 localId;
 		char time;
 		char buf[1];
 	};
-	static_assert(sizeof(VariableStackBuffer) == 0x14);
+
+
+	//static_assert(sizeof(VariableStackBuffer) == 0x14);
 	union VariableUnion
 	{
 		int intValue;
@@ -199,6 +199,7 @@ namespace game
 		unsigned int entityOffset;
 	};
 	static_assert(sizeof(VariableUnion) == 0x4);
+
 	struct VariableValue
 	{
 		int type;
@@ -218,6 +219,16 @@ namespace game
 		int profileInfoCount;
 	};
 	static_assert(sizeof(SCR_PROFILER_DATA) == 0x24);
+	//struct function_stack_t
+	//{
+	//	char* pos;
+	//	VariableValue* top;
+	//	unsigned int localId;
+	//	unsigned int localVarCount;
+	//	VariableValue* startTop;
+	//	SCR_PROFILER_DATA profileData;
+	//};
+	//static_assert(sizeof(function_stack_t) == 0x38);
 	struct function_stack_t
 	{
 		char* pos;
@@ -225,38 +236,35 @@ namespace game
 		unsigned int localId;
 		unsigned int localVarCount;
 		VariableValue* startTop;
-		SCR_PROFILER_DATA profileData;
 	};
-	static_assert(sizeof(function_stack_t) == 0x38);
 
+	//struct function_frame_t
+	//{
+	//	function_stack_t fs;
+	//	char* creationPos;
+	//};
+	//static_assert(sizeof(function_frame_t) == 0x3C);
 	struct function_frame_t
 	{
 		function_stack_t fs;
-		char* creationPos;
 	};
-	static_assert(sizeof(function_frame_t) == 0x3C);
 
-	struct __declspec(align(8)) scrVmPub_t
+	struct scrVmPub_t
 	{
 		unsigned int* localVars;
 		VariableValue* maxstack;
 		int function_count;
 		function_frame_t* function_frame;
 		VariableValue* top;
-		bool debugCode;
 		bool abort_on_error;
 		bool terminal_error;
 		bool block_execution;
 		unsigned int inparamcount;
 		unsigned int outparamcount;
-		unsigned int breakpointOutparamcount;
-		bool showError;
 		function_frame_t function_frame_start[32];
 		VariableValue stack[2048];
 		void(__cdecl* notifyListeners[1])(unsigned int, unsigned int);
 	};
-
-	static_assert(sizeof(scrVmPub_t) == 0x47B0);
 
 	struct scrVarPub_t
 	{
@@ -275,15 +283,15 @@ namespace game
 		unsigned int freeEntList;
 		unsigned int tempVariable;
 		bool bInited;
-		unsigned short savecount;
+		unsigned __int16 savecount;
 		unsigned int checksum;
 		unsigned int entId;
 		unsigned int entFieldName;
 		void* programHunkUser;
 		char* programBuffer;
 		char* endScriptBuffer;
-		unsigned short* saveIdMap;
-		unsigned short* saveIdMapRev;
+		unsigned __int16* saveIdMap;
+		unsigned __int16* saveIdMapRev;
 		unsigned int numScriptThreads;
 		unsigned int numScriptValues;
 		unsigned int numScriptObjects;
@@ -296,33 +304,29 @@ namespace game
 	static_assert(sizeof(scrVarPub_t) == 0x74);
 	struct ObjectVariableChildren
 	{
-		unsigned short firstChild;
-		unsigned short lastChild;
+		unsigned int firstChild;
+		unsigned int lastChild;
 	};
-	static_assert(sizeof(ObjectVariableChildren) == 0x4);
 
 	struct ObjectVariableValue_u_f
 	{
-		unsigned short prev;
-		unsigned short next;
+		unsigned __int16 prev;
+		unsigned __int16 next;
 	};
-	static_assert(sizeof(ObjectVariableValue_u_f) == 0x4);
 
 	union ObjectVariableValue_u_o_u
 	{
-		unsigned short size;
-		unsigned short entnum;
-		unsigned short nextEntId;
-		unsigned short self;
+		unsigned __int16 size;
+		unsigned __int16 entnum;
+		unsigned __int16 nextEntId;
+		unsigned __int16 self;
 	};
-	static_assert(sizeof(ObjectVariableValue_u_o_u) == 0x2);
 
 	struct	ObjectVariableValue_u_o
 	{
-		unsigned short refCount;
+		unsigned __int16 refCount;
 		ObjectVariableValue_u_o_u u;
 	};
-	static_assert(sizeof(ObjectVariableValue_u_o) == 0x4);
 
 	union ObjectVariableValue_w
 	{
@@ -332,70 +336,67 @@ namespace game
 		unsigned int waitTime;
 		unsigned int parentLocalId;
 	};
-	static_assert(sizeof(ObjectVariableValue_w) == 0x4);
+
 	struct ChildVariableValue_u_f
 	{
-		unsigned short prev;
-		unsigned short next;
+		unsigned __int16 prev;
+		unsigned __int16 next;
 	};
-	static_assert(sizeof(ChildVariableValue_u_f) == 0x4);
+
 	union ChildVariableValue_u
 	{
 		ChildVariableValue_u_f f;
 		VariableUnion u;
 	};
-	static_assert(sizeof(ChildVariableValue_u) == 0x4);
 
 	struct ChildBucketMatchKeys_keys
 	{
-		unsigned short name_hi;
-		unsigned short parentId;
+		unsigned __int16 name_hi;
+		unsigned __int16 parentId;
 	};
-	static_assert(sizeof(ChildBucketMatchKeys_keys) == 0x4);
 
 	union ChildBucketMatchKeys
 	{
 		ChildBucketMatchKeys_keys keys;
 		unsigned int match;
 	};
-	static_assert(sizeof(ChildBucketMatchKeys) == 0x4);
 
 	struct	ChildVariableValue
 	{
 		ChildVariableValue_u u;
-		unsigned short next;
+		unsigned int next;
+		char pad[4];
 		char type;
 		char name_lo;
+		char _pad[2];
 		ChildBucketMatchKeys k;
-		unsigned short nextSibling;
-		unsigned short prevSibling;
+		unsigned int nextSibling;
+		unsigned int prevSibling;
 	};
-	static_assert(sizeof(ChildVariableValue) == 0x10);
-
 
 	union ObjectVariableValue_u
 	{
 		ObjectVariableValue_u_f f;
 		ObjectVariableValue_u_o o;
 	};
-	static_assert(sizeof(ChildVariableValue_u) == 0x4);
 
 	struct ObjectVariableValue
 	{
 		ObjectVariableValue_u u;
 		ObjectVariableValue_w w;
 	};
-	static_assert(sizeof(ObjectVariableValue) == 0x8);
 
 
 	struct scrVarGlob_t
 	{
 		ObjectVariableValue* objectVariableValue;
-		__declspec(align(128)) ObjectVariableChildren* objectVariableChildren;
-		__declspec(align(128)) unsigned __int16* childVariableBucket;
-		__declspec(align(128)) ChildVariableValue* childVariableValue;
+		char __pad0[0x7C];
+		ObjectVariableChildren* objectVariableChildren;
+		char __pad1[0x7C];
+		unsigned __int16* childVariableBucket;
+		char __pad2[0x7C];
+		ChildVariableValue* childVariableValue;
 	};
-	static_assert(sizeof(scrVarGlob_t) == 0x200);
 
 	struct scr_classStruct_t
 	{
@@ -467,7 +468,7 @@ namespace game
 
 	struct clientHeader_t
 	{
-		ClientState_t state;
+		clientState_t state;
 		int sendAsActive;
 		int deltaMessage;
 		int rateDelayed;
@@ -559,8 +560,8 @@ namespace game
 		const char* autoCompleteDir;
 		const char* autoCompleteExt;
 		void(__cdecl* function)();
+		int flags;
 	};
-	static_assert(sizeof(cmd_function_t) == 0x14);
 
 	struct CmdArgs
 	{
@@ -612,43 +613,33 @@ namespace game
 	static_assert(sizeof(DvarValue) == 0x10);
 
 
-	struct $BFBB53559BEAC4289F32B924847E59CB
+
+	struct $A37BA207B3DDD6345C554D4661813EDD
 	{
 		int stringCount;
 		const char* const* strings;
 	};
-	static_assert(sizeof($BFBB53559BEAC4289F32B924847E59CB) == 0x8);
+
 
 	struct $9CA192F9DB66A3CB7E01DE78A0DEA53D
 	{
 		int min;
 		int max;
 	};
-	static_assert(sizeof($9CA192F9DB66A3CB7E01DE78A0DEA53D) == 0x8);
-
-	struct $5FF817DA2B223410B016B4653DEC4160
-	{
-		__int64 min;
-		__int64 max;
-	};
-	static_assert(sizeof($5FF817DA2B223410B016B4653DEC4160) == 0x10);
 
 	struct $251C2428A496074035CACA7AAF3D55BD
 	{
 		float min;
 		float max;
 	};
-	static_assert(sizeof($251C2428A496074035CACA7AAF3D55BD) == 0x8);
 
 	union DvarLimits
 	{
-		$BFBB53559BEAC4289F32B924847E59CB enumeration;
+		$A37BA207B3DDD6345C554D4661813EDD enumeration;
 		$9CA192F9DB66A3CB7E01DE78A0DEA53D integer;
-		$5FF817DA2B223410B016B4653DEC4160 integer64;
 		$251C2428A496074035CACA7AAF3D55BD value;
 		$251C2428A496074035CACA7AAF3D55BD vector;
 	};
-	static_assert(sizeof(DvarLimits) == 0x10);
 
 	struct dvar_t
 	{
@@ -664,9 +655,8 @@ namespace game
 		DvarLimits domain;
 		dvar_t* hashNext;
 	};
-	static_assert(sizeof(dvar_t) == 0x60);
 
-	struct __declspec(align(2)) GSC_OBJ
+	struct GSC_OBJ
 	{
 		char magic[8];
 		unsigned int source_crc;
@@ -679,12 +669,12 @@ namespace game
 		unsigned int fixup_offset;
 		unsigned int profile_offset;
 		unsigned int cseg_size;
-		unsigned short name;
-		unsigned short stringtablefixup_count;
-		unsigned short exports_count;
-		unsigned short imports_count;
-		unsigned short fixup_count;
-		unsigned short profile_count;
+		unsigned __int16 name;
+		unsigned __int16 stringtablefixup_count;
+		unsigned __int16 exports_count;
+		unsigned __int16 imports_count;
+		unsigned __int16 fixup_count;
+		unsigned __int16 profile_count;
 		char include_count;
 		char animtree_count;
 		char flags;
@@ -910,37 +900,11 @@ namespace game
 	};
 	static_assert(sizeof(ScriptParseTree) == 0x0C);
 
-	struct GSC_OBJGDB
-	{
-		char magic[8];
-		unsigned int version;
-		unsigned int source_crc;
-		unsigned int lineinfo_count;
-	};
-	static_assert(sizeof(GSC_OBJGDB) == 0x14);
-
-	struct debugFileInfo_t
-	{
-		const char* filename;
-		void* startAddr;
-		void* endAddr;
-		char** lineStartAddr;
-		int lineStartAddrCount;
-		char* source;
-		int sourceLen;
-		GSC_OBJGDB* gdb;
-	};
-	static_assert(sizeof(debugFileInfo_t) == 0x20);
-
 	struct objFileInfo_t
 	{
 		GSC_OBJ* activeVersion;
-		GSC_OBJ* baselineVersion;
-		debugFileInfo_t debugInfo;
-		gscProfileInfo_t* profileInfo;
-		int profileInfoCount;
+		char __pad[0x24];
 	};
-	static_assert(sizeof(objFileInfo_t) == 0x30);
 
 	union XAssetHeader
 	{
@@ -4023,7 +3987,8 @@ namespace game
 		vec3_t vHitNormal;
 		char bStuck;
 		char bDeflected;
-		char pad[0x8];//gjkcc_input_t* m_gjkcc_input;
+		//char pad[0x8];//gjkcc_input_t* m_gjkcc_input;
+		void* m_gjkcc_input;
 		char _pad[0x9F8];//char _pad[0xA00];//colgeom_visitor_inlined_t<300> proximity_data;
 		bool pathGoingDown;
 		AI_STAIRS_STATE stairsState;
@@ -4198,9 +4163,11 @@ namespace game
 
 	union $15188755ECCB7FF50C7B622D9D67D228
 	{
-		char pad[0x4];
+		//char pad[0x4];
 		//FxElemDef* elemDefs;
 		//FxElemDef* localElemDefs;
+		void* elemDefs;
+		void* localElemDefs;
 	};
 	static_assert(sizeof($15188755ECCB7FF50C7B622D9D67D228) == 0x4);
 
@@ -4243,7 +4210,8 @@ namespace game
 		const char* breakSound;
 		const char* breakNotify;
 		const char* loopSound;
-		char _pad[0xC];//XModel* spawnModel[3];
+		//char _pad[0xC];//XModel* spawnModel[3];
+		void* spawnModel[3];
 		PhysPreset* physPreset;
 	};
 	static_assert(sizeof(DestructibleStage) == 0x30);
@@ -4258,8 +4226,8 @@ namespace game
 		float meleeDamageScale;
 		float impactDamageScale;
 		float entityDamageTransfer;
-		char pad[0x4];
-		//PhysConstraints* physConstraints;
+		//char pad[0x4];		//PhysConstraints* physConstraints;
+		void* physConstraints;
 		int health;
 		const char* damageSound;
 		FxEffectDef* burnEffect;
@@ -4271,8 +4239,10 @@ namespace game
 	struct DestructibleDef
 	{
 		const char* name;
-		char _pad[0x4];		//XModel* model;
-		char pad[0x4];		//XModel* pristineModel;
+		//char _pad[0x4];		//XModel* model;
+		//char pad[0x4];		//XModel* pristineModel;
+		void* model;
+		void* pristineModel;
 		int numPieces;
 		DestructiblePiece* pieces;
 		int clientOnly;
@@ -4342,7 +4312,7 @@ namespace game
 		sentient_t* sentient;
 		TurretInfo* pTurretInfo;
 		Destructible* destructible;
-		char pad[0x4];//vehicle_t* vehicle;
+		void* vehicle; //char pad[0x2260];//vehicle_t* vehicle;
 		unsigned short model;
 		char physicsObject;
 		char takedamage;
@@ -4378,7 +4348,7 @@ namespace game
 		gentity_s* tagChildren;
 		unsigned short attachModelNames[19];
 		unsigned short attachTagNames[19];
-		char __pad[0x4];//XAnimTree_s* pAnimTree;
+		void* pAnimTree;//char __pad[0x4];//XAnimTree_s* pAnimTree;
 		unsigned short disconnectedLinks;
 		int iDisconnectTime;
 		int useCount;

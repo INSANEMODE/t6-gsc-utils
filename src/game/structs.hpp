@@ -1663,7 +1663,6 @@ namespace game
 		int flags;
 	};
 	static_assert(sizeof(LerpEntityStateTurret) == 0x20);
-	//////////////checked above
 
 	union $41090544F01B971CEA6978417397BD1B
 	{
@@ -2467,6 +2466,128 @@ namespace game
 	};
 	static_assert(sizeof(playerState_s) == 0x2A08);
 
+
+	enum pmoveVehAnimState_t
+	{
+		PMOVE_VEH_ANIM_STATE_PLAYING = 0x0,
+		PMOVE_VEH_ANIM_STATE_END_STAGE = 0x1,
+		PMOVE_VEH_ANIM_STATE_COMPLETE = 0x2,
+	};
+
+	enum LocalClientNum_t
+	{
+		INVALID_LOCAL_CLIENT = 0xFFFFFFFF,
+		LOCAL_CLIENT_FIRST = 0x0,
+		LOCAL_CLIENT_0 = 0x0,
+		ONLY_LOCAL_CLIENT = 0x0,
+		LOCAL_CLIENT_COUNT = 0x1,
+	};
+
+	union $FC62ACB8B3FBB71D25811245FDCD5C2F
+	{
+		//const CollisionAabbTree* tree;
+		//const cbrush_t* brush;
+		void* tree;
+		void* brush;
+	};
+
+	struct col_prim_t
+	{
+		int type;
+		$FC62ACB8B3FBB71D25811245FDCD5C2F ___u1;
+	};
+
+	struct visitor_base_t
+	{
+		void* __vftable /*VFT*/;
+	};
+
+
+	struct __declspec(align(8)) colgeom_visitor_t : visitor_base_t
+	{
+		char pad[0x80];
+	};
+
+	struct __declspec(align(16)) colgeom_visitor_inlined_t : colgeom_visitor_t
+	{
+		int nprims;
+		bool overflow;
+		col_prim_t prims[300];
+	};
+
+
+	struct __declspec(align(16)) pmove_t
+	{
+		playerState_s* ps;
+		usercmd_s cmd;
+		usercmd_s oldcmd;
+		int tracemask;
+		int numtouch;
+		int touchents[32];
+		int numGlassTouch;
+		int touchGlasses[32];
+		vec3_t mins;
+		vec3_t maxs;
+		float xyspeed;
+		float currentPitch;
+		float averagePitch;
+		int nextPitch;
+		float pitchHistory[30];
+		int proneChange;
+		float maxSprintTimeMultiplier;
+		bool mantleStarted;
+		vec3_t mantleEndPos;
+		int mantleDuration;
+		int viewChangeTime;
+		float viewChange;
+		vec3_t vehicleAngles;
+		pmoveVehAnimState_t vehAnimState;
+		unsigned __int8 handler;
+		LocalClientNum_t localClientNum;
+		void* m_gjkcc_input; //const gjkcc_input_t* m_gjkcc_input;
+		colgeom_visitor_inlined_t proximity_data;
+		bool gravity;
+		int gravityOverride;
+	};
+
+	struct __declspec(align(16)) trace_t
+	{
+		char pad[0x40];
+		/*
+		hybrid_vector normal;
+		float fraction;
+		int sflags;
+		int cflags;
+		TraceHitType hitType;
+		unsigned __int16 hitId;
+		unsigned __int16 modelIndex;
+		unsigned __int16 partName;
+		unsigned __int16 boneIndex;
+		unsigned __int16 partGroup;
+		bool allsolid;
+		bool startsolid;
+		bool walkable;
+		cStaticModel_s* staticModel;
+		int hitPartition;
+		*/
+	};
+
+	struct pml_t
+	{
+		vec3_t forward;
+		vec3_t right;
+		vec3_t up;
+		float frametime;
+		int msec;
+		int walking;
+		int groundPlane;
+		int almostGroundPlane;
+		trace_t groundTrace;
+		float impactSpeed;
+		vec3_t previous_origin;
+		vec3_t previous_velocity;
+		unsigned int holdrand;
+	};
 
 	struct serverSnapshot_t
 	{

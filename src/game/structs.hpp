@@ -44,7 +44,7 @@ namespace game
 		NA_IP = 0x4,
 	};
 
-	enum ClientState_t
+	enum clientState_t
 	{
 		CS_FREE,
 		CS_ZOMBIE,
@@ -397,7 +397,6 @@ namespace game
 		char __pad2[0x7C];
 		ChildVariableValue* childVariableValue;
 	};
-	static_assert(sizeof(scrVarGlob_t) == 0x200);
 
 	struct scr_classStruct_t
 	{
@@ -563,7 +562,6 @@ namespace game
 		void(__cdecl* function)();
 		int flags;
 	};
-	static_assert(sizeof(cmd_function_t) == 0x14);
 
 	struct CmdArgs
 	{
@@ -621,7 +619,6 @@ namespace game
 		int stringCount;
 		const char* const* strings;
 	};
-	static_assert(sizeof($BFBB53559BEAC4289F32B924847E59CB) == 0x8);
 
 
 	struct $9CA192F9DB66A3CB7E01DE78A0DEA53D

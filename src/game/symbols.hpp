@@ -26,6 +26,8 @@ namespace game
 
 	WEAK symbol<char*(const char*)> I_CleanStr{0x44F2B0, 0x483F40};
 
+	WEAK symbol<bool(pmove_t* pm, pml_t* pml)> Jump_Check{0x0, 0x6B1CD0};
+
 	WEAK symbol<void*(const char** pName, int* min_args, int* max_args)> Player_GetMethod{0x432480, 0x6F2DB0};
 	WEAK symbol<void*(const char** pName, int* type, int* min_args, int* max_args)> Scr_GetCommonFunction{0x691110, 0x4EB070};
 	WEAK symbol<void*(const char** pName, int* type, int* min_args, int* max_args)> Scr_GetMethod{0x59D090, 0x486120};

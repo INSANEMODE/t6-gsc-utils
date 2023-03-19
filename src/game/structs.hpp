@@ -481,6 +481,29 @@ namespace game
 	};
 
 	static_assert(sizeof(clientHeader_t) == 0x72C);
+	struct svscmd_info_t
+	{
+		char* cmd;
+		int time;
+		int type;
+	};
+	struct bitarray
+	{
+		int array[2];
+	};
+	union $60971AFD306BE716C67F4ED6B7576D56
+	{
+		float rollmove;
+		__int16 damageKick[2];
+	};
+	struct $190F2CF944EC18EE3AF27F473C4F9DBE
+	{
+		unsigned __int32 weaponIdx : 8;
+		unsigned __int32 attachment1 : 6;
+		unsigned __int32 attachment2 : 6;
+		unsigned __int32 attachment3 : 6;
+		unsigned __int32 padding : 6;
+	};
 
 	struct svscmd_info_t
 	{
